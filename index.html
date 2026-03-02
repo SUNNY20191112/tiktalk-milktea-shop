@@ -274,25 +274,7 @@ img {
         </button>
     </div>
 </div>
-
-    <nav class="h-16 bg-white border-t flex items-center justify-around text-gray-500 shrink-0 z-50">
-        <button onclick="switchTab('home')" id="tab-home" class="flex flex-col items-center">
-            <span class="text-xl">🏠</span><span class="text-[10px]">首页</span>
-        </button>
-        <button onclick="switchTab('order')" id="tab-order" class="flex flex-col items-center">
-            <span class="text-xl">✋</span><span class="text-[10px]">点单</span>
-        </button>
-        <button onclick="switchTab('pickup')" id="tab-pickup" class="flex flex-col items-center">
-            <span class="text-xl">🎫</span><span class="text-[10px]">取单</span>
-        </button>
-        <button onclick="switchTab('cart')" id="tab-cart" class="flex flex-col items-center">
-            <span class="text-xl">🛒</span><span class="text-[10px]">清单</span>
-        </button>
-        <button onclick="switchTab('me')" id="tab-me" class="flex flex-col items-center">
-            <span class="text-xl">👤</span><span class="text-[10px]">我的</span>
-        </button>
-    </nav>
-    <!-- ====== Address Modal ====== -->
+<!-- ====== Address Modal ====== -->
 <div id="address-modal" class="fixed inset-0 bg-black/50 z-[120] hidden items-end">
   <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up">
     <div class="flex justify-between items-center mb-4">
@@ -378,6 +360,24 @@ img {
     </div>
   </div>
 </div>
+    <nav class="h-16 bg-white border-t flex items-center justify-around text-gray-500 shrink-0 z-50">
+        <button onclick="switchTab('home')" id="tab-home" class="flex flex-col items-center">
+            <span class="text-xl">🏠</span><span class="text-[10px]">首页</span>
+        </button>
+        <button onclick="switchTab('order')" id="tab-order" class="flex flex-col items-center">
+            <span class="text-xl">✋</span><span class="text-[10px]">点单</span>
+        </button>
+        <button onclick="switchTab('pickup')" id="tab-pickup" class="flex flex-col items-center">
+            <span class="text-xl">🎫</span><span class="text-[10px]">取单</span>
+        </button>
+        <button onclick="switchTab('cart')" id="tab-cart" class="flex flex-col items-center">
+            <span class="text-xl">🛒</span><span class="text-[10px]">清单</span>
+        </button>
+        <button onclick="switchTab('me')" id="tab-me" class="flex flex-col items-center">
+            <span class="text-xl">👤</span><span class="text-[10px]">我的</span>
+        </button>
+    </nav>
+    
     <script>
         // --- 数据配置 (已修复定义错误) ---
          const menuData = [
