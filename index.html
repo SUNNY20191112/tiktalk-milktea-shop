@@ -559,8 +559,11 @@ function persistCart() {
             document.getElementById('page-cart').classList.add('hidden');
             document.getElementById('page-pickup').classList.add('hidden'); // 新增
             document.getElementById('page-me').classList.add('hidden');     // 新增
+            if (tabId === 'me') {
+  bindMePageActions();
+}
             document.getElementById('cart-preview').classList.add('hidden');
-
+            
             document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-tab'));
 
             document.getElementById('page-' + tabId).classList.remove('hidden');
@@ -1410,14 +1413,16 @@ function clearLocalCache() {
 }
 
 // 把“我的”页三个卡片按钮绑定到功能
+// 把“我的”页三个卡片按钮绑定到功能
 function bindMePageActions() {
-  // 用文本定位（不改你现有 HTML 结构的最小方案）
   const cards = document.querySelectorAll('#page-me .bg-white.p-4.rounded-xl');
   cards.forEach(card => {
     const txt = card.innerText.trim();
-    if (txt.includes('我的收货地址')) card.onclick = openAddressForm;
-    if (txt.includes('联系客服')) card.onclick = openSupport;
-    if (txt.includes('个人设置')) card.onclick = openSettings;
+
+    if (txt.includes('我的收货地址')) card.onclick = openAddressModal;
+    if (txt.includes('联系客服'))     card.onclick = openSupportModal;
+    if (txt.includes('个人设置'))     card.onclick = openSettingsModal;
+
     card.classList.add('cursor-pointer');
   });
 }
