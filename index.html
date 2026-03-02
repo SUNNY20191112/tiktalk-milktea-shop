@@ -90,7 +90,11 @@ img {
     </div>
 
     <div class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
-        <h1 class="text-lg font-black text-gray-800 tracking-widest uppercase" style="font-family: 'PingFang SC', sans-serif;">茶语奶茶</h1>
+        <h1 class="text-[22px] leading-none font-black text-gray-900 tracking-[0.22em] uppercase"
+    style="font-family:'PingFang SC', sans-serif;">
+  茶语奶茶
+</h1>
+<p class="text-[10px] text-gray-400 tracking-[0.25em] mt-1">MANILA • SINCE 2018</p>
     </div>
 
     <div class="ml-auto flex items-center gap-2">
@@ -116,7 +120,8 @@ img {
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
                     <div>
                         <p class="text-white font-bold text-lg leading-tight">茶语 · 寻找一杯好茶</p>
-                        <p class="text-white/80 text-[10px] mt-1 tracking-widest">SINCE 2018 | MANILA</p>
+                        </h1>
+                        <p class="text-[10px] text-gray-400 tracking-[0.25em] mt-1">MANILA • SINCE 2018</p>
                     </div>
                 </div>
             </div>
@@ -124,9 +129,9 @@ img {
             <div class="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-gray-100">
                 <div class="flex items-center gap-2 mb-3">
                     <div class="w-3 h-5 bg-orange-500 rounded-full"></div>
-                    <h2 class="text-sm font-bold text-gray-800">关于茶语</h2>
+                    <h2 class="text-[16px] font-extrabold text-gray-900 tracking-wide">关于茶语</h2>
                 </div>
-                <p class="text-gray-500 text-xs leading-relaxed italic">
+                <p class="text-[13px] leading-relaxed text-gray-600">
                     "立足马尼拉8年，我们坚持使用优质茶底与新鲜水果。茶语，不仅是一杯奶茶，更是对生活的一种态度。"
                 </p>
             </div>
@@ -135,8 +140,8 @@ img {
                 <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
                     <div class="text-xl bg-orange-50 w-10 h-10 flex items-center justify-center rounded-lg">🕒</div>
                     <div>
-                        <p class="text-[10px] text-gray-400">营业时间</p>
-                        <p class="text-xs font-bold text-gray-700">09:00-22:30</p>
+                        <p class="text-[11px] text-gray-400">营业时间</p>
+                        <p class="text-[14px] font-bold text-gray-800">09:00-22:30</p>
                     </div>
                 </div>
                 <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
@@ -484,7 +489,7 @@ function renderOrderPage() {
   // 右侧商品（每个商品显示：- qty +）
   prodCont.innerHTML = categories.map(cat => `
     <div id="section-${cat}" class="mb-8 category-section">
-      <h2 class="font-bold text-gray-400 text-[10px] mb-3 uppercase tracking-tighter">${cat}</h2>
+      <h2 class="text-[13px] font-extrabold text-gray-500 tracking-wider uppercase mb-3">${cat}</h2>
       <div class="space-y-4">
         ${menuData.filter(item => item.category === cat).map(item => {
           const qty = getQtyByProductId(item.id); // 总数量（同商品不同规格也累计）
