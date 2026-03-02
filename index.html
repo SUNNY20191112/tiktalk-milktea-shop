@@ -1162,7 +1162,179 @@ async function loadMenuFromBackend() {
         console.error('loadMenuFromBackend failed:', err);
     }
 }
+// ===== 我的页：地址/客服/设置 =====
+const ADDRESS_KEY = 'tiktalk_address_v1';
 
+function openCommonModal({ title, subtitle = '', bodyHTML = '', actionsHTML = '' }) {
+  const modal = document.getElementById('common-modal');
+  if (!modal) return;
+
+  document.getElementById('common-modal-title').innerText = title || '';
+  document.getElementById('common-modal-subtitle').innerText = subtitle || '';
+  document.getElementById('common-modal-body').innerHTML = bodyHTML || '';
+  document.getElementById('common-modal-actions').innerHTML = actionsHTML || '';
+
+  modal.classList.remove('hidden');
+}
+function closeCommonModal() {
+  const modal = document.getElementById('common-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function loadAddress() {
+  try { return JSON.parse(localStorage.getItem(ADDRESS_KEY) || 'null'); } catch { return null; }
+}
+function saveAddress(data) {
+  try { localStorage.setItem(ADDRESS_KEY, JSON.stringify(data)); } catch {}
+}
+
+function openAddressForm() {
+  const saved = loadAddress() || {};
+  openCommonModal({
+    title: '我的收货地址',
+    subtitle: '填写后会在下单时自动带出（MVP：先本地保存）',
+    bodyHTML: `
+      <div class="space-y-3">
+        <div>
+          <div class="text-xs text-gray-500 mb-1">收货人</div>
+          <input id="addr-name" class="w-full border rounded-xl px-3 py-2" placeholder="姓名" value="${saved.name || ''}">
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 mb-1">联系电话</div>
+          <input id="addr-phone" class="w-full border rounded-xl px-3 py-2" placeholder="手机号" value="${saved.phone || ''}">
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 mb-1">收货地址</div>
+          <textarea id="addr-address" class="w-full border rounded-xl px-3 py-2" rows="3" placeholder="详细地址">${saved.address || ''}</textarea>
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 mb-1">备注</div>
+          <input id="addr-note" class="w-full border rounded-xl px-3 py-2" placeholder="门牌/楼层/特殊说明" value="${saved.note || ''}">
+        </div>
+      </div>
+    `,
+    actionsHTML: `
+      <button onclick="closeCommonModal()" class="flex-1 border rounded-xl py-3 font-bold">取消</button>
+      <button onclick="submitAddressForm()" class="flex-1 bg-yellow-400 rounded-xl py-3 font-bold">保存</button>
+    `
+  });
+}
+
+function submitAddressForm() {
+  const name = document.getElementById('addr-name')?.value?.trim() || '';
+  const phone = document.getElementById('addr-phone')?.value?.trim() || '';
+  const address = document.getElementById('addr-address')?.value?.trim() || '';
+  const note = document.getElementById('addr-note')?.value?.trim() || '';
+
+  if (!name || !phone || !address) {
+    notify('请至少填写：收货人/电话/地址');
+    return;
+  }
+
+  saveAddress({ name, phone, address, note });
+  closeCommonModal();
+  notify('地址已保存');
+}
+
+function openSupport() {
+  // 你可以改成你的实际客服信息
+  const phone = '0917XXXXXXX';
+  const telegramUsername = 'tiktalk_support'; // 例如：你的客服 TG 用户名（不带@也可以）
+  const fbPage = 'https://www.facebook.com/yourpage'; // 可选
+
+  openCommonModal({
+    title: '联系客服',
+    subtitle: '选择一种方式联系',
+    bodyHTML: `
+      <div class="space-y-2 text-sm">
+        <div class="p-3 bg-gray-50 rounded-xl flex justify-between items-center">
+          <div>
+            <div class="font-bold">电话</div>
+            <div class="text-xs text-gray-500">${phone}</div>
+          </div>
+          <button class="px-3 py-2 border rounded-xl" onclick="window.location.href='tel:${phone}'">拨打</button>
+        </div>
+
+        <div class="p-3 bg-gray-50 rounded-xl flex justify-between items-center">
+          <div>
+            <div class="font-bold">Telegram</div>
+            <div class="text-xs text-gray-500">@${telegramUsername}</div>
+          </div>
+          <button class="px-3 py-2 border rounded-xl" onclick="openTelegramChat('${telegramUsername}')">打开</button>
+        </div>
+
+        ${fbPage ? `
+        <div class="p-3 bg-gray-50 rounded-xl flex justify-between items-center">
+          <div>
+            <div class="font-bold">Facebook Page</div>
+            <div class="text-xs text-gray-500">消息联系</div>
+          </div>
+          <button class="px-3 py-2 border rounded-xl" onclick="window.open('${fbPage}', '_blank')">打开</button>
+        </div>` : ''}
+      </div>
+    `,
+    actionsHTML: `<button onclick="closeCommonModal()" class="w-full bg-gray-900 text-white rounded-xl py-3 font-bold">关闭</button>`
+  });
+}
+
+function openTelegramChat(username) {
+  // Telegram Mini App 环境：优先用 tg.openTelegramLink
+  if (typeof tg !== 'undefined' && tg && typeof tg.openTelegramLink === 'function') {
+    tg.openTelegramLink(`https://t.me/${username}`);
+    return;
+  }
+  window.open(`https://t.me/${username}`, '_blank');
+}
+
+function openSettings() {
+  openCommonModal({
+    title: '个人设置',
+    subtitle: 'MVP：语言 + 清空本地缓存',
+    bodyHTML: `
+      <div class="space-y-3">
+        <div class="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
+          <div>
+            <div class="font-bold text-sm">语言</div>
+            <div class="text-xs text-gray-500">当前：${(typeof appLang !== 'undefined' && appLang==='en') ? 'English' : '中文'}</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="px-3 py-2 border rounded-xl" onclick="switchLang('zh')">中文</button>
+            <button class="px-3 py-2 border rounded-xl" onclick="switchLang('en')">EN</button>
+          </div>
+        </div>
+
+        <div class="p-3 bg-gray-50 rounded-xl">
+          <div class="font-bold text-sm mb-2">缓存管理</div>
+          <button class="w-full border rounded-xl py-3 font-bold" onclick="clearLocalCache()">清空本地缓存（购物车/地址/语言）</button>
+          <div class="text-xs text-gray-500 mt-2">用于排查异常；清空后会回到初始状态。</div>
+        </div>
+      </div>
+    `,
+    actionsHTML: `<button onclick="closeCommonModal()" class="w-full bg-gray-900 text-white rounded-xl py-3 font-bold">关闭</button>`
+  });
+}
+
+function clearLocalCache() {
+  try {
+    localStorage.removeItem('tiktalk_cart_v1');
+    localStorage.removeItem('tiktalk_address_v1');
+    localStorage.removeItem('appLang');
+  } catch {}
+  notify('已清空缓存，请刷新页面');
+}
+
+// 把“我的”页三个卡片按钮绑定到功能
+function bindMePageActions() {
+  // 用文本定位（不改你现有 HTML 结构的最小方案）
+  const cards = document.querySelectorAll('#page-me .bg-white.p-4.rounded-xl');
+  cards.forEach(card => {
+    const txt = card.innerText.trim();
+    if (txt.includes('我的收货地址')) card.onclick = openAddressForm;
+    if (txt.includes('联系客服')) card.onclick = openSupport;
+    if (txt.includes('个人设置')) card.onclick = openSettings;
+    card.classList.add('cursor-pointer');
+  });
+}
 // ---- 初始化 ----
 (function initAppPatch() {
     ensureMenuBilingualFields();
@@ -1182,6 +1354,7 @@ async function loadMenuFromBackend() {
 
     // 默认显示首页（保留你的原逻辑）
     switchTab('home');
+    bindMePageActions();
     updateCartUI();
     setTimeout(() => {
         if (document.getElementById('btn-奶盖系列')) scrollToCat('奶盖系列');
