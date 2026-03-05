@@ -1192,7 +1192,7 @@ async function submitOrder() {
       const orderNo = 'TY' + Date.now().toString().slice(-6);
 
 // 保存订单
-addOrder({ ...payload, orderNo });
+addOrderRecord({ orderNo, payload });
 
 alert('下单成功！订单号：' + orderNo);
       
@@ -1202,6 +1202,7 @@ alert('下单成功！订单号：' + orderNo);
       updateCartUI();
       renderCartPage();
       switchTab('pickup');
+      renderPickupPage();
       return;
     } catch (err) {
       console.error('Backend submit failed, fallback to Telegram:', err);
