@@ -537,6 +537,25 @@ APP.KEYS = APP.KEYS || {
   ADDRESS: 'tiktalk_address_v1',
   ORDERS:  'tiktalk_orders_v1'
 };
+APP.STORE.loadAddress = function () {
+  try {
+    return JSON.parse(localStorage.getItem(APP.KEYS.ADDRESS) || 'null');
+  } catch (e) {
+    return null;
+  }
+};
+
+APP.STORE.saveAddress = function (payload) {
+  try {
+    localStorage.setItem(APP.KEYS.ADDRESS, JSON.stringify(payload));
+  } catch (e) {}
+};
+
+APP.STORE.clearAddress = function () {
+  try {
+    localStorage.removeItem(APP.KEYS.ADDRESS);
+  } catch (e) {}
+};
         // ====== PATCH 1: 全局状态（必须有）======
 let cart = [];
 let currentItem = null;
@@ -1649,9 +1668,6 @@ function closeCommonModal() {
   if (modal) modal.classList.add('hidden');
 }
 
-function loadAddress() {
-  try { return JSON.parse(localStorage.getItem(ADDRESS_KEY) || 'null'); } catch { return null; }
-}
 
 APP.STORE.loadAddress = function () {
   try { return JSON.parse(localStorage.getItem(APP.KEYS.ADDRESS) || 'null'); }
@@ -1821,9 +1837,7 @@ function saveAddress() {
     return;
   }
 
-  // 关键：下单时读的是 APP.KEYS.ADDRESS，而且字段名必须叫 addr
   APP.STORE.saveAddress({ name, phone, addr, note, updatedAt: Date.now() });
-
   APP.UI.refreshMeSummary?.();
   alert('地址已保存');
   closeAddressModal();
