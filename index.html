@@ -1333,7 +1333,87 @@ function openCheckoutConfirmModal(payload) {
 }
 
 window.closeCheckoutConfirmModal = closeCheckoutConfirmModal;
-window.confirmSubmitOrder = confirmSubmitOrder;        
+window.confirmSubmitOrder = confirmSubmitOrder;    
+
+function openCheckoutConfirmModal(payload) {
+  window.__pendingOrderPayload = payload;
+
+  const customer = payload.customer || {};
+  const html = `
+    <div id="checkout-confirm-modal" class="fixed inset-0 bg-black/50 z-[140] flex items-end">
+      <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up max-h-[85vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <div class="font-bold text-lg">确认订单信息</div>
+          <button type="button" onclick="closeCheckoutConfirmModal()" class="text-gray-400 text-2xl">✕</button>
+        </div>
+
+        <div class="space-y-3 text-sm">
+          <div class="bg-gray-50 rounded-xl p-3">
+            <div class="text-gray-400 text-xs mb-1">收货人</div>
+            <div class="font-bold">${customer.name || '-'}</div>
+          </div>
+
+          <div class="bg-gray-50 rounded-xl p-3">
+            <div class="text-gray-400 text-xs mb-1">联系电话</div>
+            <div class="font-bold">${customer.phone || '-'}</div>
+          </div>
+
+          <div class="bg-gray-50 rounded-xl p-3">
+            <div class="text-gray-400 text-xs mb-1">收货地址</div>
+            <div class="font-bold">${customer.address || '-'}</div>
+          </div>
+
+          <div class="bg-gray-50 rounded-xl p-3">
+            <div class="text-gray-400 text-xs mb-1">备注</div>
+            <div class="font-bold">${customer.note || '无'}</div>
+          </div>
+
+          <label class="flex items-start gap-2 mt-2">
+            <input id="confirm-address-check" type="checkbox" class="mt-1">
+            <span class="text-xs text-gray-600">我已确认以上收货信息准确无误</span>
+          </label>
+        </div>
+
+        <div class="mt-5 flex gap-3">
+          <button type="button" onclick="closeCheckoutConfirmModal()" class="flex-1 border rounded-xl py-3 font-bold">取消</button>
+          <button type="button" onclick="confirmSubmitOrder()" class="flex-1 bg-yellow-400 rounded-xl py-3 font-bold">确认下单</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const old = document.getElementById('checkout-confirm-modal');
+  if (old) old.remove();
+
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeCheckoutConfirmModal() {
+  const modal = document.getElementById('checkout-confirm-modal');
+  if (modal) modal.remove();
+}
+
+async function confirmSubmitOrder() {
+  const checked = document.getElementById('confirm-address-check');
+  if (!checked || !checked.checked) {
+    alert('请先确认收货信息准确无误');
+    return;
+  }
+
+  const payload = window.__pendingOrderPayload;
+  if (!payload) {
+    alert('订单数据不存在，请重新下单');
+    return;
+  }
+
+  closeCheckoutConfirmModal();
+  await reallySubmitOrder(payload);
+}
+
+// 挂到全局，给 onclick 用
+window.openCheckoutConfirmModal = openCheckoutConfirmModal;
+window.closeCheckoutConfirmModal = closeCheckoutConfirmModal;
+window.confirmSubmitOrder = confirmSubmitOrder;
 // =========================
 // Pickup Page: Orders (LocalStorage MVP)
 // =========================
