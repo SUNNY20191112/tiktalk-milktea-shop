@@ -1323,13 +1323,27 @@ function renderPickupPage() {
       `;
     }).join('');
 
-    const statusBadge = o.status === 'done'
-      ? `<span class="text-[10px] px-2 py-1 rounded-full bg-green-50 text-green-600 font-bold">已完成</span>`
-      : `<span class="text-[10px] px-2 py-1 rounded-full bg-yellow-50 text-yellow-700 font-bold">制作中</span>`;
+    const STATUS_TEXT = {
+  pending: '已下单',
+  accepted: '已接单',
+  preparing: '制作中',
+  ready: '可取单',
+  completed: '已完成',
+  cancelled: '已取消'
+};
 
-    const actionBtn = o.status === 'done'
-      ? `<button onclick="markOrderDone('${o.orderNo}')" class="hidden"></button>`
-      : `<button onclick="markOrderDone('${o.orderNo}')" class="text-xs bg-gray-900 text-white px-3 py-2 rounded-xl font-bold">完成</button>`;
+const statusText = STATUS_TEXT[o.status] || '处理中';
+
+const statusBadge =
+  o.status === 'completed'
+    ? `<span class="text-[10px] px-2 py-1 rounded-full bg-green-50 text-green-600 font-bold">${statusText}</span>`
+    : o.status === 'ready'
+    ? `<span class="text-[10px] px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">${statusText}</span>`
+    : o.status === 'cancelled'
+    ? `<span class="text-[10px] px-2 py-1 rounded-full bg-red-50 text-red-600 font-bold">${statusText}</span>`
+    : `<span class="text-[10px] px-2 py-1 rounded-full bg-yellow-50 text-yellow-700 font-bold">${statusText}</span>`;
+
+    const actionBtn = '';
 
     return `
       <div onclick="openOrderDetailModal('${o.orderNo}')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 cursor-pointer">
@@ -1349,9 +1363,6 @@ function renderPickupPage() {
           ${(o.items || []).length > 4 ? `<div class="text-[10px] text-gray-400">…还有 ${(o.items || []).length - 4} 项</div>` : ''}
         </div>
 
-        <div class="mt-4 flex justify-end">
-          ${actionBtn}
-        </div>
       </div>
     `;
   }).join('');
