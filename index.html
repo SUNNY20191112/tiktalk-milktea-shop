@@ -690,12 +690,7 @@ function scrollToCat(catName) {
   setTimeout(() => { prodCont.onscroll = savedHandler; }, 800);
 }
         // --- 4. 购物车逻辑 ---
-        function addToCart(id) {
-  const product = menuData.find(item => item.id === id);
-  if (!product) return;
-  cart.push({ ...product, cartId: `${product.id}_${Date.now()}` });
-  persistCart();
-}
+        
         
         function makeCartKey(id, specs) {
   return `${id}|${(specs || '').trim()}`;
@@ -1176,78 +1171,6 @@ function buildOrderPayload() {
 }
 
 // ---- 提交订单：优先后端，失败则回退 Telegram ----
-async function submitOrder() {
-  if (!cart || cart.length === 0) {
-    notify('购物车是空的');
-    return;
-  }
-
-  const payload = buildOrderPayload();
-  const address = APP.STORE.loadAddress();
-  if (!address || !address.name || !address.phone || !address.addr) {
-    alert('请先在【我的 → 收货地址】填写信息，再下单');
-    // 可选：自动跳转到“我的”
-    switchTab?.('me');
-    // 可选：自动打开地址弹窗
-    setTimeout(() => openAddressModal?.(), 300);
-    return;
-  }
-  // 1) 优先走后端接口（后端准备好后打开 USE_BACKEND）
-  if (APP_CONFIG.USE_BACKEND && APP_CONFIG.API_BASE) {
-    try {
-      const res = await fetch(`${APP_CONFIG.API_BASE}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
-     
-      // 后端成功：给用户明确反馈 + 清空购物车 + 跳转取单
-      const orderNo = 'TY' + Date.now().toString().slice(-6);
-
-// 保存订单
-addOrderRecord({ orderNo, payload });
-
-alert('下单成功！订单号：' + orderNo);
-      
-
-      cart = [];
-      persistCart();
-      updateCartUI();
-      renderCartPage();
-      switchTab('pickup');
-      renderPickupPage();
-      return;
-    } catch (err) {
-      console.error('Backend submit failed, fallback to Telegram:', err);
-      // 后端失败继续走 Telegram（容错）
-    }
-  }
-
-  // 2) 没后端 / 后端失败：回退 Telegram sendData 或 mock
-  sendOrderToTelegram(payload);
-
-  // MVP：前端直接给成功反馈（真正生产要等 bot/后端确认后再提示）
-  const orderNo = 'TY' + Date.now().toString().slice(-6);
-
-// 保存订单到取单列表
-addOrderRecord({ orderNo, payload });
-
-notify('已发送订单（MVP）！订单号：' + orderNo);
-
-cart = [];
-persistCart();
-updateCartUI();
-renderCartPage();
-switchTab('pickup');
-}
-
-
-
 
 async function submitOrder() {
   if (!cart || cart.length === 0) {
@@ -1265,8 +1188,25 @@ async function submitOrder() {
     return;
   }
 
-  // 这里只弹出确认窗口，不直接提交
-  function openCheckoutConfirmModal(payload) {
+  // =========================
+// Checkout Confirm Modal + Submit Order
+// 完整替代版
+// =========================
+
+// 统一订单状态文本
+const STATUS_TEXT = {
+  pending: '已下单',
+  accepted: '已接单',
+  preparing: '制作中',
+  ready: '可取单',
+  completed: '已完成',
+  cancelled: '已取消'
+};
+
+// ---- 打开下单确认弹窗 ----
+function openCheckoutConfirmModal(payload) {
+  if (!payload) return;
+
   window.__pendingOrderPayload = payload;
 
   const customer = payload.customer || {};
@@ -1333,8 +1273,13 @@ async function submitOrder() {
           <button type="button" onclick="closeCheckoutConfirmModal()" class="flex-1 border rounded-xl py-3 font-bold">
             返回修改
           </button>
-          <button id="checkout-confirm-btn" type="button" onclick="confirmSubmitOrder()" disabled
-            class="flex-1 rounded-xl py-3 font-bold bg-gray-300 text-white cursor-not-allowed">
+          <button
+            id="checkout-confirm-btn"
+            type="button"
+            onclick="confirmSubmitOrder()"
+            disabled
+            class="flex-1 rounded-xl py-3 font-bold bg-gray-300 text-white cursor-not-allowed"
+          >
             确认下单
           </button>
         </div>
@@ -1349,14 +1294,17 @@ async function submitOrder() {
   document.body.style.overflow = 'hidden';
 }
 
+// ---- 关闭确认弹窗 ----
 function closeCheckoutConfirmModal() {
   const modal = document.getElementById('checkout-confirm-modal');
   if (modal) modal.remove();
   document.body.style.overflow = '';
+  window.__pendingOrderPayload = null;
 }
 
+// ---- 勾选确认后启用按钮 ----
 function toggleCheckoutConfirmBtn() {
-  const checked = document.getElementById('confirm-address-check')?.checked;
+  const checked = !!document.getElementById('confirm-address-check')?.checked;
   const btn = document.getElementById('checkout-confirm-btn');
   if (!btn) return;
 
@@ -1369,12 +1317,95 @@ function toggleCheckoutConfirmBtn() {
   }
 }
 
+// ---- 从确认弹窗跳去修改地址 ----
 function goEditAddressFromCheckout() {
   closeCheckoutConfirmModal();
   switchTab('me');
-  setTimeout(() => openAddressModal(), 250);
+  setTimeout(() => {
+    if (typeof openAddressModal === 'function') {
+      openAddressModal();
+    }
+  }, 250);
 }
 
+// ---- 真正执行提交订单 ----
+async function reallySubmitOrder(payload) {
+  if (!payload) throw new Error('payload is empty');
+
+  // 1) 优先走后端
+  if (APP_CONFIG && APP_CONFIG.USE_BACKEND && APP_CONFIG.API_BASE) {
+    const res = await fetch(`${APP_CONFIG.API_BASE}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
+
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (e) {}
+
+    const orderNo = data.orderNo || ('TY' + Date.now().toString().slice(-6));
+
+    addOrderRecord({
+      orderNo,
+      payload: {
+        ...payload,
+        status: 'pending'
+      }
+    });
+
+    notify('下单成功！订单号：' + orderNo);
+
+    cart = [];
+    persistCart();
+    updateCartUI();
+    renderCartPage();
+    if (typeof renderOrderPage === 'function') renderOrderPage();
+
+    switchTab('pickup');
+    if (typeof renderPickupPage === 'function') renderPickupPage();
+    return;
+  }
+
+  // 2) 没后端时：Telegram 环境则发给 bot；非 Telegram 环境则只做本地 MVP
+  let sent = false;
+  if (typeof sendOrderToTelegram === 'function') {
+    sent = sendOrderToTelegram(payload) === true;
+  }
+
+  const orderNo = 'TY' + Date.now().toString().slice(-6);
+
+  addOrderRecord({
+    orderNo,
+    payload: {
+      ...payload,
+      status: 'pending'
+    }
+  });
+
+  if (sent) {
+    notify('订单已发送！订单号：' + orderNo);
+  } else {
+    notify('当前不是 Telegram 环境，已保存本地测试订单。订单号：' + orderNo);
+  }
+
+  cart = [];
+  persistCart();
+  updateCartUI();
+  renderCartPage();
+  if (typeof renderOrderPage === 'function') renderOrderPage();
+
+  switchTab('pickup');
+  if (typeof renderPickupPage === 'function') renderPickupPage();
+}
+
+// ---- 点击确认下单 ----
 async function confirmSubmitOrder() {
   const btn = document.getElementById('checkout-confirm-btn');
   if (!btn || btn.disabled) return;
@@ -1395,19 +1426,45 @@ async function confirmSubmitOrder() {
   } catch (e) {
     console.error('confirmSubmitOrder error:', e);
     alert('确认下单报错：' + e.message);
+
     btn.disabled = false;
     btn.innerText = '确认下单';
     btn.className = 'flex-1 rounded-xl py-3 font-bold bg-yellow-400 text-black';
   }
 }
 
+// ---- 入口：点击“立即下单支付”时先弹确认框 ----
+async function submitOrder() {
+  if (!cart || cart.length === 0) {
+    notify('购物车是空的');
+    return;
+  }
+
+  const address = APP.STORE.loadAddress();
+  if (!address || !address.name || !address.phone || !address.addr) {
+    alert('请先在【我的 → 收货地址】填写信息，再下单');
+    switchTab('me');
+    setTimeout(() => {
+      if (typeof openAddressModal === 'function') {
+        openAddressModal();
+      }
+    }, 300);
+    return;
+  }
+
+  const payload = buildOrderPayload();
+
+  // 这里只打开确认弹窗，不直接提交
+  openCheckoutConfirmModal(payload);
+}
+
+// ---- 挂到全局给 onclick 使用 ----
+window.submitOrder = submitOrder;
 window.openCheckoutConfirmModal = openCheckoutConfirmModal;
 window.closeCheckoutConfirmModal = closeCheckoutConfirmModal;
 window.toggleCheckoutConfirmBtn = toggleCheckoutConfirmBtn;
 window.goEditAddressFromCheckout = goEditAddressFromCheckout;
 window.confirmSubmitOrder = confirmSubmitOrder;
-
-
   sendOrderToTelegram(payload);
 
   const orderNo = 'TY' + Date.now().toString().slice(-6);
@@ -1432,10 +1489,6 @@ window.confirmSubmitOrder = confirmSubmitOrder;
 
 
 
-// 挂到全局，给 onclick 用
-window.openCheckoutConfirmModal = openCheckoutConfirmModal;
-window.closeCheckoutConfirmModal = closeCheckoutConfirmModal;
-window.confirmSubmitOrder = confirmSubmitOrder;
 // =========================
 // Pickup Page: Orders (LocalStorage MVP)
 // =========================
@@ -1486,7 +1539,7 @@ function addOrderRecord({ orderNo, payload }) {
 function markOrderDone(orderNo) {
   const list = loadOrders();
   const target = list.find(o => o.orderNo === orderNo);
-  if (target) target.status = 'done';
+  if (target) target.status = 'completed';
   saveOrders(list);
   renderPickupPage();
 }
@@ -1610,9 +1663,14 @@ function openOrderDetailModal(orderNo) {
       </div>
       <div class="flex justify-between items-center">
         <span class="text-gray-500 text-sm">状态</span>
-        <span class="text-sm font-bold ${order.status === 'done' ? 'text-green-600' : 'text-yellow-600'}">
-          ${order.status === 'done' ? '已完成' : '制作中'}
-        </span>
+        <span class="text-sm font-bold ${
+  order.status === 'completed' ? 'text-green-600' :
+  order.status === 'ready' ? 'text-blue-600' :
+  order.status === 'cancelled' ? 'text-red-600' :
+  'text-yellow-600'
+}">
+  ${STATUS_TEXT[order.status] || '处理中'}
+</span>
       </div>
     </div>
 
