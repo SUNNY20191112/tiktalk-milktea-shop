@@ -589,7 +589,8 @@ function persistCart() {
             document.getElementById('page-pickup').classList.add('hidden'); // 新增
             document.getElementById('page-me').classList.add('hidden');     // 新增
             if (tabId === 'me') {
-  bindMePageActions();
+  if (typeof renderMePage === 'function') renderMePage();
+  if (typeof bindMePageActions === 'function') bindMePageActions();
 }
             document.getElementById('cart-preview').classList.add('hidden');
             
@@ -803,13 +804,25 @@ function renderCartPage() {
                 </div>
 
                 <div class="flex gap-2 mt-3">
-                  <button onclick="editCartLineSpecs(${index})" class="px-3 py-1.5 text-xs border rounded-lg">
-                    改规格
-                  </button>
-                  <button onclick="removeCartLine(${index})" class="px-3 py-1.5 text-xs border rounded-lg text-red-500 border-red-200">
-                    删除
-                  </button>
-                </div>
+  ${(() => {
+    const item = menuData.find(i => i.id === line.id);
+    const canEditSpecs = item && DRINK_CATEGORIES.includes(item.category);
+
+    return canEditSpecs ? `
+      <button onclick="editCartLineSpecs(${index})" class="px-3 py-1.5 text-xs border rounded-lg">
+        改规格
+      </button>
+    ` : '';
+  })()}
+
+  <button onclick="removeCartLine(${index})" class="px-3 py-1.5 text-xs border rounded-lg text-red-500 border-red-200">
+    删除
+  </button>
+  if (!DRINK_CATEGORIES.includes(item.category)) {
+  alert('该商品没有可修改规格');
+  return;
+}
+</div>
               </div>
 
               <div class="text-right shrink-0">
@@ -1419,13 +1432,12 @@ function goEditAddressFromCheckout() {
   checkoutFlowState.editingAddressFromCheckout = true;
 
   closeCheckoutConfirmModal();
-  switchTab('me');
 
   setTimeout(() => {
     if (typeof openAddressModal === 'function') {
       openAddressModal({ fromCheckout: true });
     }
-  }, 250);
+  }, 100);
 }
 
 // ---- 真正执行提交订单 ----
@@ -2105,20 +2117,21 @@ function saveAddressFromModal() {
   closeAddressModal();
 
   if (addressModalState.fromCheckout) {
-    addressModalState.fromCheckout = false;
-    checkoutFlowState.editingAddressFromCheckout = false;
+  addressModalState.fromCheckout = false;
+  checkoutFlowState.editingAddressFromCheckout = false;
 
-    switchTab('cart');
+  setTimeout(() => {
+    const payload = buildOrderPayload();
+    openCheckoutConfirmModal(payload);
+  }, 100);
 
-    setTimeout(() => {
-      const payload = buildOrderPayload();
-      openCheckoutConfirmModal(payload);
-    }, 250);
+  return;
+}
 
-    return;
-  }
-
+// 普通从“我的”页进入时，不强制切页
+if (currentTab !== 'me') {
   switchTab('me');
+}
 }
 
 window.openAddressModal = openAddressModal;
