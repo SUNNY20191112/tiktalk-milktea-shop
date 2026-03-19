@@ -768,42 +768,80 @@ function renderCartPage() {
   if (!listCont) return;
 
   if (!cart || cart.length === 0) {
-    listCont.innerHTML = `<p class="text-gray-400 text-center py-20">清单是空的</p>`;
+    listCont.innerHTML = `
+      <div class="text-center py-16">
+        <p class="text-gray-400 mb-4">清单是空的</p>
+        <button onclick="switchTab('order')" class="px-5 py-3 bg-yellow-400 rounded-xl font-bold">
+          去点单
+        </button>
+      </div>
+    `;
     return;
   }
 
   const total = cart.reduce((sum, x) => sum + Number(x.qty || 0) * Number(x.price || 0), 0);
 
-  listCont.innerHTML = cart.map((line, index) => {
-    const lineTotal = Number(line.qty || 0) * Number(line.price || 0);
+  listCont.innerHTML = `
+    <div class="space-y-3">
+      ${cart.map((line, index) => {
+        const lineTotal = Number(line.qty || 0) * Number(line.price || 0);
 
-    return `
-      <div class="bg-white p-4 rounded-xl mb-2 border border-gray-50">
-        <div class="flex justify-between items-start gap-3">
-          <div class="flex-1">
-            <div class="font-bold text-gray-800 text-sm">${line.name}</div>
-            <div class="text-[10px] text-orange-400 font-bold mt-0.5">${line.specs || ''}</div>
-            <div class="text-[10px] text-gray-400 mt-1">单价：₱ ${line.price}</div>
-          </div>
+        return `
+          <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex justify-between items-start gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-gray-900 text-sm">${line.name}</div>
 
-          <div class="text-right">
-            <div class="text-orange-500 font-bold text-sm">小计：₱ ${lineTotal}</div>
-            <div class="flex items-center gap-2 mt-2 justify-end">
-              <button onclick="cartLineDec(${index})" class="w-7 h-7 rounded-full border font-bold">-</button>
-              <span class="w-6 text-center font-bold">${line.qty}</span>
-              <button onclick="cartLineInc(${index})" class="w-7 h-7 rounded-full bg-yellow-400 font-bold">+</button>
+                ${line.specs ? `
+                  <div class="text-[11px] text-orange-500 font-bold mt-1">
+                    ${line.specs}
+                  </div>
+                ` : ''}
+
+                <div class="text-[11px] text-gray-400 mt-1">
+                  单价：₱ ${line.price}
+                </div>
+
+                <div class="flex gap-2 mt-3">
+                  <button onclick="editCartLineSpecs(${index})" class="px-3 py-1.5 text-xs border rounded-lg">
+                    改规格
+                  </button>
+                  <button onclick="removeCartLine(${index})" class="px-3 py-1.5 text-xs border rounded-lg text-red-500 border-red-200">
+                    删除
+                  </button>
+                </div>
+              </div>
+
+              <div class="text-right shrink-0">
+                <div class="text-orange-500 font-black text-sm">₱ ${lineTotal}</div>
+                <div class="flex items-center gap-2 mt-3 justify-end">
+                  <button onclick="cartLineDec(${index})" class="w-8 h-8 rounded-full border font-bold">-</button>
+                  <span class="w-6 text-center font-bold">${line.qty}</span>
+                  <button onclick="cartLineInc(${index})" class="w-8 h-8 rounded-full bg-yellow-400 font-bold">+</button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        `;
+      }).join('')}
+    </div>
+
+    <div class="mt-5">
+      <button onclick="switchTab('order')" class="w-full border-2 border-dashed border-yellow-300 rounded-2xl py-4 font-bold text-gray-700 bg-yellow-50">
+        + 继续添加商品
+      </button>
+    </div>
+
+    <div class="mt-6 p-5 bg-yellow-50 rounded-2xl border border-yellow-100">
+      <div class="flex justify-between items-center mb-4">
+        <span class="font-bold text-gray-800 text-base">合计金额</span>
+        <span class="font-black text-lg text-orange-500">₱ ${total}</span>
       </div>
-    `;
-  }).join('') + `
-    <div class="mt-10 p-5 bg-yellow-50 rounded-2xl border-2 border-dashed border-yellow-200">
-      <div class="flex justify-between mb-4 font-bold text-lg"><span>合计金额:</span><span>₱ ${total}</span></div>
-      <button onclick="submitOrder().catch(e=>{console.error(e); alert('submitOrder 报错：'+ e.message);})"
-  class="w-full bg-gray-900 text-white py-4 rounded-xl font-bold">
-  立即下单支付
-</button>
+
+      <button onclick="submitOrder().catch(e => { console.error(e); alert('submitOrder 报错：' + e.message); })"
+        class="w-full bg-gray-900 text-white py-4 rounded-xl font-bold">
+        立即下单支付
+      </button>
     </div>
   `;
 }
@@ -1052,7 +1090,9 @@ function openSpecs(id) {
 }
 
 function closeModal() {
-    document.getElementById('spec-modal').classList.add('hidden');
+  const modal = document.getElementById('spec-modal');
+  if (modal) modal.classList.add('hidden');
+  window.__editingCartLineIndex = null;
 }
 
 function selectSpec(btn, group) {
@@ -1100,41 +1140,94 @@ function addToCartDirect(item) {
 const DRINK_CATEGORIES = ['奶盖系列', '店长推荐', '果茶系列', '鲜榨果汁'];
 
 function confirmAddToCart() {
-    if (!currentItem) return;
+  if (!currentItem) return;
 
-    let finalSpecs = '';
+  let finalSpecs = '';
 
-    if (DRINK_CATEGORIES.includes(currentItem.category)) {
-        const activeButtons = document.querySelectorAll('#spec-modal .spec-btn.active');
-        finalSpecs = [...activeButtons]
-            .map(btn => btn.innerText.split('(')[0].trim())
-            .join(' / ');
-    }
+  if (DRINK_CATEGORIES.includes(currentItem.category)) {
+    const activeButtons = document.querySelectorAll('#spec-modal .spec-btn.active');
+    finalSpecs = [...activeButtons]
+      .map(btn => btn.innerText.split('(')[0].trim())
+      .join(' / ');
+  }
 
-    // 为了后端和员工端双语展示：在购物车里先存中英快照（当前本地 en 先占位）
-    const itemSnapshot = {
-        ...currentItem,
-        cartId: `${currentItem.id}_${Date.now()}`,
-        specs: finalSpecs,
-        product_name_zh_snapshot: currentItem.name_zh || currentItem.name,
-        product_name_en_snapshot: currentItem.name_en || currentItem.name,
-        category_zh_snapshot: currentItem.category_zh || currentItem.category,
-        category_en_snapshot: currentItem.category_en || currentItem.category
+  const editingIndex = window.__editingCartLineIndex;
+
+  if (editingIndex !== undefined && editingIndex !== null && cart[editingIndex]) {
+    const oldLine = cart[editingIndex];
+
+    cart[editingIndex] = {
+      ...oldLine,
+      specs: finalSpecs
     };
 
-    cartInc(currentItem, finalSpecs);
+    persistCart();
+    updateCartUI();
+    renderCartPage();
+    if (typeof renderOrderPage === 'function') renderOrderPage();
 
-updateCartUI();
-renderOrderPage();   // ✅ 关键：立刻刷新点单页数量
-renderCartPage();
+    window.__editingCartLineIndex = null;
+    closeModal();
+    return;
+  }
 
-closeModal();
+  cartInc(currentItem, finalSpecs);
 
-    if (tg && typeof tg.showAlert === 'function') {
-        // 这个提示在 Telegram 中会弹
-        // tg.showAlert(t('added'));
-    }
+  updateCartUI();
+  renderOrderPage();
+  renderCartPage();
+
+  closeModal();
 }
+function removeCartLine(index) {
+  if (!cart[index]) return;
+
+  cart.splice(index, 1);
+  persistCart();
+  updateCartUI();
+  renderCartPage();
+  if (typeof renderOrderPage === 'function') renderOrderPage();
+}
+
+function editCartLineSpecs(index) {
+  const line = cart[index];
+  if (!line) return;
+
+  const item = menuData.find(i => i.id === line.id);
+  if (!item) {
+    alert('找不到商品数据，无法修改规格');
+    return;
+  }
+
+  if (!DRINK_CATEGORIES.includes(item.category)) {
+    alert('该商品没有可修改规格');
+    return;
+  }
+
+  currentItem = item;
+  openSpecs(item.id);
+  window.__editingCartLineIndex = index;
+
+  setTimeout(() => {
+    const specs = (line.specs || '').split('/').map(s => s.trim()).filter(Boolean);
+    if (!specs.length) return;
+
+    document.querySelectorAll('#spec-modal .spec-btn').forEach(btn => {
+      const txt = btn.innerText.split('(')[0].trim();
+
+      if (specs.includes(txt)) {
+        btn.classList.add('active', 'bg-orange-50', 'text-orange-500', 'border-orange-500');
+        btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-transparent');
+      } else {
+        btn.classList.remove('active', 'bg-orange-50', 'text-orange-500', 'border-orange-500');
+        btn.classList.add('bg-gray-50', 'text-gray-500', 'border-transparent');
+      }
+    });
+  }, 50);
+}
+
+window.removeCartLine = removeCartLine;
+window.editCartLineSpecs = editCartLineSpecs;
 
 // ---- 订单构造（给后端 / Telegram 同时使用）----
 function buildOrderPayload() {
@@ -1318,12 +1411,19 @@ function toggleCheckoutConfirmBtn() {
 }
 
 // ---- 从确认弹窗跳去修改地址 ----
+let checkoutFlowState = {
+  editingAddressFromCheckout: false
+};
+
 function goEditAddressFromCheckout() {
+  checkoutFlowState.editingAddressFromCheckout = true;
+
   closeCheckoutConfirmModal();
   switchTab('me');
+
   setTimeout(() => {
     if (typeof openAddressModal === 'function') {
-      openAddressModal();
+      openAddressModal({ fromCheckout: true });
     }
   }, 250);
 }
@@ -1907,76 +2007,123 @@ function bindMePageActions() {
 }
 // ====== Me page modals + address storage ======
 
-function openAddressModal() {
-  const m = document.getElementById('address-modal');
-  if (!m) return;
 
-  // 回填
-  try {
-    const saved = JSON.parse(localStorage.getItem(ADDRESS_KEY) || '{}');
-    document.getElementById('addr-name').value  = saved.name  || '';
-    document.getElementById('addr-phone').value = saved.phone || '';
-    document.getElementById('addr-line').value  = saved.addr  || '';
-    document.getElementById('addr-note').value  = saved.note  || '';
-  } catch (e) {}
 
-  m.classList.remove('hidden');
-  m.classList.add('flex');
+let addressModalState = {
+  fromCheckout: false
+};
+
+function openAddressModal(options = {}) {
+  addressModalState.fromCheckout = !!options.fromCheckout;
+
+  const old = APP.STORE.loadAddress() || {
+    name: '',
+    phone: '',
+    addr: '',
+    note: ''
+  };
+
+  const html = `
+    <div id="address-modal" class="fixed inset-0 bg-black/50 z-[150] flex items-end">
+      <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up max-h-[85vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <div class="font-black text-lg text-gray-900">收货地址</div>
+          <button type="button" onclick="closeAddressModal()" class="text-gray-400 text-2xl">✕</button>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-bold mb-2">收货人</label>
+            <input id="addr-name" class="w-full border rounded-xl px-4 py-3" value="${old.name || ''}" placeholder="请输入收货人姓名">
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold mb-2">联系电话</label>
+            <input id="addr-phone" class="w-full border rounded-xl px-4 py-3" value="${old.phone || ''}" placeholder="请输入联系电话">
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold mb-2">收货地址</label>
+            <textarea id="addr-detail" class="w-full border rounded-xl px-4 py-3 min-h-[100px]" placeholder="请输入详细地址">${old.addr || ''}</textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold mb-2">备注</label>
+            <textarea id="addr-note" class="w-full border rounded-xl px-4 py-3 min-h-[80px]" placeholder="备注（选填）">${old.note || ''}</textarea>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+          <button type="button" onclick="closeAddressModal()" class="flex-1 border rounded-xl py-3 font-bold">
+            取消
+          </button>
+          <button type="button" onclick="saveAddressFromModal()" class="flex-1 bg-gray-900 text-white rounded-xl py-3 font-bold">
+            保存
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const oldModal = document.getElementById('address-modal');
+  if (oldModal) oldModal.remove();
+
+  document.body.insertAdjacentHTML('beforeend', html);
+  document.body.style.overflow = 'hidden';
 }
+
 function closeAddressModal() {
-  const m = document.getElementById('address-modal');
-  if (!m) return;
-  m.classList.add('hidden');
-  m.classList.remove('flex');
+  const modal = document.getElementById('address-modal');
+  if (modal) modal.remove();
+  document.body.style.overflow = '';
 }
-APP.STORE.loadOrders = function () {
-  try { return JSON.parse(localStorage.getItem(APP.KEYS.ORDERS) || '[]'); }
-  catch (e) { return []; }
-};
 
-APP.STORE.saveOrders = function (orders) {
-  try { localStorage.setItem(APP.KEYS.ORDERS, JSON.stringify(orders)); } catch (e) {}
-};
+function saveAddressFromModal() {
+  const name = document.getElementById('addr-name')?.value.trim() || '';
+  const phone = document.getElementById('addr-phone')?.value.trim() || '';
+  const addr = document.getElementById('addr-detail')?.value.trim() || '';
+  const note = document.getElementById('addr-note')?.value.trim() || '';
 
-APP.STORE.pushOrder = function (order) {
-  const orders = APP.STORE.loadOrders();
-  orders.unshift(order);
-  APP.STORE.saveOrders(orders.slice(0, 30)); // 只保留最近30单
-};
-function saveAddress() {
-  const name  = (document.getElementById('addr-name')?.value || '').trim();
-  const phone = (document.getElementById('addr-phone')?.value || '').trim();
-  const addr  = (document.getElementById('addr-line')?.value || '').trim();
-  const note  = (document.getElementById('addr-note')?.value || '').trim();
-
-  if (!name || !phone || !addr) {
-    alert('请填写：姓名 / 电话 / 地址');
+  if (!name) {
+    alert('请填写收货人姓名');
+    return;
+  }
+  if (!phone) {
+    alert('请填写联系电话');
+    return;
+  }
+  if (!addr) {
+    alert('请填写收货地址');
     return;
   }
 
-  APP.STORE.saveAddress({ name, phone, addr, note, updatedAt: Date.now() });
-  APP.UI.refreshMeSummary?.();
-  alert('地址已保存');
+  APP.STORE.saveAddress({ name, phone, addr, note });
+  if (APP.UI && typeof APP.UI.refreshMeSummary === 'function') {
+    APP.UI.refreshMeSummary();
+  }
+
   closeAddressModal();
+
+  if (addressModalState.fromCheckout) {
+    addressModalState.fromCheckout = false;
+    checkoutFlowState.editingAddressFromCheckout = false;
+
+    switchTab('cart');
+
+    setTimeout(() => {
+      const payload = buildOrderPayload();
+      openCheckoutConfirmModal(payload);
+    }, 250);
+
+    return;
+  }
+
+  switchTab('me');
 }
 
-function clearSavedAddress() {
-  try { localStorage.removeItem(ADDRESS_KEY); } catch (e) {}
-  notify('已清空收货地址');
-}
-
-function openSupportModal() {
-  const m = document.getElementById('support-modal');
-  if (!m) return;
-  m.classList.remove('hidden');
-  m.classList.add('flex');
-}
-function closeSupportModal() {
-  const m = document.getElementById('support-modal');
-  if (!m) return;
-  m.classList.add('hidden');
-  m.classList.remove('flex');
-}
+window.openAddressModal = openAddressModal;
+window.closeAddressModal = closeAddressModal;
+window.saveAddressFromModal = saveAddressFromModal;
 
 // 把下面这个链接换成你真实客服链接（或用 tg.openTelegramLink）
 function openSupportTelegram() {
