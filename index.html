@@ -9,9 +9,7 @@
   <style>
     :root {
       --brand: #ff6b6b;
-      --brand-dark: #ef4444;
       --bg: #f8fafc;
-      --card: #ffffff;
       --line: #e5e7eb;
       --text: #111827;
       --muted: #6b7280;
@@ -45,7 +43,6 @@
           购物车 <span id="cartCount">0</span>
         </button>
       </div>
-
       <div class="mt-3">
         <div class="flex items-center gap-2 rounded-2xl bg-gray-100 px-3 py-3">
           <span class="text-gray-400">🔍</span>
@@ -58,7 +55,6 @@
       <aside class="w-[92px] bg-gray-50 border-r border-gray-100">
         <div id="categoryTabs" class="hide-scrollbar h-full overflow-y-auto py-2"></div>
       </aside>
-
       <section class="flex-1 min-w-0">
         <div class="px-4 pt-3 pb-2 bg-white sticky top-[88px] z-20 border-b border-gray-50">
           <div id="currentCategoryName" class="text-base font-bold">店长推荐</div>
@@ -85,7 +81,7 @@
         <button onclick="closeProductModal()" class="w-8 h-8 rounded-full bg-gray-100 text-lg">×</button>
       </div>
 
-      <button id="toggleCustomizeBtn" class="w-full mt-4 px-4 py-3 rounded-2xl border border-gray-200 text-sm font-semibold flex items-center justify-between">
+      <button id="toggleCustomizeBtn" class="hidden w-full mt-4 px-4 py-3 rounded-2xl border border-gray-200 text-sm font-semibold flex items-center justify-between">
         <span>甜度 / 冰度 / 小料</span>
         <span id="toggleCustomizeIcon">＋</span>
       </button>
@@ -141,19 +137,16 @@
         <h2 class="text-lg font-bold">确认订单</h2>
         <button onclick="closeCheckout()" class="w-8 h-8 rounded-full bg-gray-100 text-lg">×</button>
       </div>
-
       <div class="space-y-3">
         <input id="customerName" class="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none" placeholder="联系人姓名" />
         <input id="customerPhone" class="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none" placeholder="联系电话" />
         <textarea id="customerAddress" class="w-full border border-gray-200 rounded-2xl px-4 py-3 min-h-[100px] outline-none" placeholder="收货地址"></textarea>
         <textarea id="customerNote" class="w-full border border-gray-200 rounded-2xl px-4 py-3 min-h-[90px] outline-none" placeholder="备注"></textarea>
       </div>
-
       <div class="mt-4 p-3 rounded-2xl bg-gray-50">
         <div class="text-sm font-semibold mb-2">订单预览</div>
         <div id="checkoutSummary" class="space-y-2 text-sm"></div>
       </div>
-
       <button id="submitOrderBtn" class="w-full mt-4 py-3 rounded-full bg-emerald-500 text-white font-semibold">提交订单（演示版）</button>
     </div>
   </div>
@@ -171,6 +164,7 @@
   <script>
     const APP = {
       telegram: window.Telegram?.WebApp || null,
+      defaults: { sugar: '100%', ice: '正常冰' },
       state: {
         activeCategory: 'recommended',
         cart: [],
@@ -186,156 +180,103 @@
         sugar: ['0%', '25%', '50%', '75%', '100%'],
         ice: ['去冰', '少冰', '正常冰', '多冰'],
         toppings: [
-          { name: '珍珠', price: 20 },
-          { name: '西米', price: 30 },
-          { name: '椰果', price: 20 },
-          { name: '布丁', price: 20 },
-          { name: '仙草冻', price: 20 },
-          { name: '红豆', price: 20 },
-          { name: '燕麦', price: 30 },
-          { name: '血糯米', price: 30 },
-          { name: '冰粉', price: 30 },
-          { name: '芋圆', price: 30 },
-          { name: '脆啵啵', price: 30 },
-          { name: '爆爆珠', price: 30 }
+          { name: '珍珠', price: 20 }, { name: '西米', price: 30 }, { name: '椰果', price: 20 },
+          { name: '布丁', price: 20 }, { name: '仙草冻', price: 20 }, { name: '红豆', price: 20 },
+          { name: '燕麦', price: 30 }, { name: '血糯米', price: 30 }, { name: '冰粉', price: 30 },
+          { name: '芋圆', price: 30 }, { name: '脆啵啵', price: 30 }, { name: '爆爆珠', price: 30 }
         ]
       },
       categoryMeta: {
-        recommended: '精选人气款',
-        'milk-tea': '经典奶茶与欧蕾',
-        'fruit-tea': '清爽鲜果风味',
-        'milk-cover': '奶盖与鲜乳茶',
-        'fresh-juice': '鲜榨、奶昔与冰沙',
-        coffee: '咖啡与双皮奶',
-        fruits: '水果与切盒',
-        dessert: '甜品与蛋糕',
-        goddess: '轻养生甜品',
-        snacks: '炸物与小吃',
-        hamburg: '汉堡、热狗、意面',
-        pancake: '手抓饼、卷饼、披萨'
+        recommended: '精选人气款', 'milk-tea': '经典奶茶与欧蕾', 'fruit-tea': '清爽鲜果风味', 'milk-cover': '奶盖与鲜乳茶',
+        'fresh-juice': '鲜榨、奶昔与冰沙', coffee: '咖啡与双皮奶', fruits: '水果与切盒', dessert: '甜品与蛋糕',
+        goddess: '轻养生甜品', snacks: '炸物与小吃', hamburg: '汉堡、热狗、意面', pancake: '手抓饼、卷饼、披萨'
       },
       data: {
         categories: [
-          { id: 'recommended', name: '推荐' },
-          { id: 'milk-tea', name: '奶茶' },
-          { id: 'fruit-tea', name: '果茶' },
-          { id: 'milk-cover', name: '奶盖' },
-          { id: 'fresh-juice', name: '鲜榨' },
-          { id: 'coffee', name: '咖啡' },
-          { id: 'fruits', name: '水果' },
-          { id: 'dessert', name: '甜品' },
-          { id: 'goddess', name: '女神' },
-          { id: 'snacks', name: '小吃' },
-          { id: 'hamburg', name: '汉堡意面' },
-          { id: 'pancake', name: '手抓饼' }
+          { id: 'recommended', name: '推荐' }, { id: 'milk-tea', name: '奶茶' }, { id: 'fruit-tea', name: '果茶' },
+          { id: 'milk-cover', name: '奶盖' }, { id: 'fresh-juice', name: '鲜榨' }, { id: 'coffee', name: '咖啡' },
+          { id: 'fruits', name: '水果' }, { id: 'dessert', name: '甜品' }, { id: 'goddess', name: '女神' },
+          { id: 'snacks', name: '小吃' }, { id: 'hamburg', name: '汉堡意面' }, { id: 'pancake', name: '手抓饼' }
         ],
         products: [
-          { id:'N01', category:'recommended', name:'珍珠奶茶', price:130, desc:'店长推荐' },
-          { id:'N10', category:'recommended', name:'奶茶三兄弟', price:150, desc:'店长推荐' },
-          { id:'N23', category:'recommended', name:'芋泥啵啵奶茶', price:180, desc:'店长推荐' },
-          { id:'F09', category:'recommended', name:'杨枝甘露', price:200, desc:'店长推荐' },
-          { id:'M18', category:'recommended', name:'芝士多肉葡萄', price:200, desc:'店长推荐' },
-          { id:'S27', category:'recommended', name:'爆浆鸡排', price:220, desc:'店长推荐' },
-          { id:'N02', category:'milk-tea', name:'椰果奶茶', price:130, desc:'奶茶系列' },
-          { id:'N03', category:'milk-tea', name:'芋圆奶茶', price:150, desc:'奶茶系列' },
-          { id:'N04', category:'milk-tea', name:'血糯米奶茶', price:150, desc:'奶茶系列' },
-          { id:'N05', category:'milk-tea', name:'燕麦奶茶', price:150, desc:'奶茶系列' },
-          { id:'N06', category:'milk-tea', name:'布丁奶茶', price:130, desc:'奶茶系列' },
-          { id:'F04', category:'fruit-tea', name:'金桔柠檬', price:150, desc:'果茶系列' },
-          { id:'F05', category:'fruit-tea', name:'满杯百香果', price:150, desc:'果茶系列' },
-          { id:'F20', category:'fruit-tea', name:'手打草莓冰柠茶', price:200, desc:'果茶系列' },
-          { id:'M01', category:'milk-cover', name:'芝士奶盖', price:150, desc:'奶盖系列' },
-          { id:'M04', category:'milk-cover', name:'草莓奶盖', price:150, desc:'奶盖系列' },
-          { id:'M37', category:'milk-cover', name:'鲜乳茶·花田乌龙', price:220, desc:'奶盖系列' },
-          { id:'H01', category:'fresh-juice', name:'鲜榨西瓜汁', price:130, desc:'鲜榨系列' },
-          { id:'H02', category:'fresh-juice', name:'芒果冰沙', price:150, desc:'鲜榨系列' },
-          { id:'H08', category:'fresh-juice', name:'芒果牛奶', price:160, desc:'鲜榨系列' },
-          { id:'A09', category:'coffee', name:'椰青冰美式', price:200, desc:'咖啡&双皮奶' },
-          { id:'A11', category:'coffee', name:'草莓拿铁', price:220, desc:'咖啡&双皮奶' },
-          { id:'A04', category:'coffee', name:'原味双皮奶', price:200, desc:'咖啡&双皮奶' },
-          { id:'A61', category:'fruits', name:'韩国奶油草莓/盒', price:720, desc:'新鲜水果' },
-          { id:'A64', category:'fruits', name:'芒果切盒', price:380, desc:'新鲜水果' },
-          { id:'A93', category:'fruits', name:'榴莲/盒', price:620, desc:'新鲜水果' },
-          { id:'D01', category:'dessert', name:'红糖冰粉', price:220, desc:'甜品系列' },
-          { id:'D02', category:'dessert', name:'芋圆烧仙草', price:260, desc:'甜品系列' },
-          { id:'D15', category:'dessert', name:'芒果蛋糕盒子', price:380, desc:'甜品系列' },
-          { id:'D21', category:'dessert', name:'蓝莓提拉米苏', price:600, desc:'甜品系列' },
-          { id:'C01', category:'goddess', name:'桃胶雪燕炖奶', price:320, desc:'女神专区' },
-          { id:'C13', category:'goddess', name:'芒果椰椰冰豆花', price:320, desc:'女神专区' },
-          { id:'C16', category:'goddess', name:'桂花酒酿冰豆花', price:320, desc:'女神专区' },
-          { id:'S01', category:'snacks', name:'奥尔良鸡翅', price:120, desc:'小吃系列' },
-          { id:'S08', category:'snacks', name:'风味薯条', price:120, desc:'小吃系列' },
-          { id:'S33', category:'snacks', name:'金黄小酥肉', price:150, desc:'小吃系列' },
-          { id:'B01', category:'hamburg', name:'经典培根芝士热狗', price:220, desc:'汉堡&意面' },
-          { id:'B04', category:'hamburg', name:'凤梨牛肉汉堡', price:240, desc:'汉堡&意面' },
-          { id:'B11', category:'hamburg', name:'黑椒牛柳意面', price:520, desc:'汉堡&意面' },
-          { id:'P01', category:'pancake', name:'手抓饼', price:160, desc:'手抓饼系列' },
-          { id:'P10', category:'pancake', name:'经典鸡肉卷', price:200, desc:'手抓饼系列' },
-          { id:'P21', category:'pancake', name:'夏威夷风情披萨（8英寸）', price:780, desc:'手抓饼系列' }
+          { id:'N01', category:'recommended', name:'珍珠奶茶', price:130, desc:'店长推荐', customizable:true },
+          { id:'N10', category:'recommended', name:'奶茶三兄弟', price:150, desc:'店长推荐', customizable:true },
+          { id:'N23', category:'recommended', name:'芋泥啵啵奶茶', price:180, desc:'店长推荐', customizable:true },
+          { id:'F09', category:'recommended', name:'杨枝甘露', price:200, desc:'店长推荐', customizable:true },
+          { id:'M18', category:'recommended', name:'芝士多肉葡萄', price:200, desc:'店长推荐', customizable:true },
+          { id:'S27', category:'recommended', name:'爆浆鸡排', price:220, desc:'店长推荐', customizable:false },
+          { id:'N02', category:'milk-tea', name:'椰果奶茶', price:130, desc:'奶茶系列', customizable:true },
+          { id:'N03', category:'milk-tea', name:'芋圆奶茶', price:150, desc:'奶茶系列', customizable:true },
+          { id:'N04', category:'milk-tea', name:'血糯米奶茶', price:150, desc:'奶茶系列', customizable:true },
+          { id:'N05', category:'milk-tea', name:'燕麦奶茶', price:150, desc:'奶茶系列', customizable:true },
+          { id:'N06', category:'milk-tea', name:'布丁奶茶', price:130, desc:'奶茶系列', customizable:true },
+          { id:'F04', category:'fruit-tea', name:'金桔柠檬', price:150, desc:'果茶系列', customizable:true },
+          { id:'F05', category:'fruit-tea', name:'满杯百香果', price:150, desc:'果茶系列', customizable:true },
+          { id:'F20', category:'fruit-tea', name:'手打草莓冰柠茶', price:200, desc:'果茶系列', customizable:true },
+          { id:'M01', category:'milk-cover', name:'芝士奶盖', price:150, desc:'奶盖系列', customizable:true },
+          { id:'M04', category:'milk-cover', name:'草莓奶盖', price:150, desc:'奶盖系列', customizable:true },
+          { id:'M37', category:'milk-cover', name:'鲜乳茶·花田乌龙', price:220, desc:'奶盖系列', customizable:true },
+          { id:'H01', category:'fresh-juice', name:'鲜榨西瓜汁', price:130, desc:'鲜榨系列', customizable:true },
+          { id:'H02', category:'fresh-juice', name:'芒果冰沙', price:150, desc:'鲜榨系列', customizable:true },
+          { id:'H08', category:'fresh-juice', name:'芒果牛奶', price:160, desc:'鲜榨系列', customizable:true },
+          { id:'A09', category:'coffee', name:'椰青冰美式', price:200, desc:'咖啡&双皮奶', customizable:true },
+          { id:'A11', category:'coffee', name:'草莓拿铁', price:220, desc:'咖啡&双皮奶', customizable:true },
+          { id:'A04', category:'coffee', name:'原味双皮奶', price:200, desc:'咖啡&双皮奶', customizable:true },
+          { id:'A61', category:'fruits', name:'韩国奶油草莓/盒', price:720, desc:'新鲜水果', customizable:false },
+          { id:'A64', category:'fruits', name:'芒果切盒', price:380, desc:'新鲜水果', customizable:false },
+          { id:'A93', category:'fruits', name:'榴莲/盒', price:620, desc:'新鲜水果', customizable:false },
+          { id:'D01', category:'dessert', name:'红糖冰粉', price:220, desc:'甜品系列', customizable:false },
+          { id:'D02', category:'dessert', name:'芋圆烧仙草', price:260, desc:'甜品系列', customizable:false },
+          { id:'D15', category:'dessert', name:'芒果蛋糕盒子', price:380, desc:'甜品系列', customizable:false },
+          { id:'D21', category:'dessert', name:'蓝莓提拉米苏', price:600, desc:'甜品系列', customizable:false },
+          { id:'C01', category:'goddess', name:'桃胶雪燕炖奶', price:320, desc:'女神专区', customizable:false },
+          { id:'C13', category:'goddess', name:'芒果椰椰冰豆花', price:320, desc:'女神专区', customizable:false },
+          { id:'C16', category:'goddess', name:'桂花酒酿冰豆花', price:320, desc:'女神专区', customizable:false },
+          { id:'S01', category:'snacks', name:'奥尔良鸡翅', price:120, desc:'小吃系列', customizable:false },
+          { id:'S08', category:'snacks', name:'风味薯条', price:120, desc:'小吃系列', customizable:false },
+          { id:'S33', category:'snacks', name:'金黄小酥肉', price:150, desc:'小吃系列', customizable:false },
+          { id:'B01', category:'hamburg', name:'经典培根芝士热狗', price:220, desc:'汉堡&意面', customizable:false },
+          { id:'B04', category:'hamburg', name:'凤梨牛肉汉堡', price:240, desc:'汉堡&意面', customizable:false },
+          { id:'B11', category:'hamburg', name:'黑椒牛柳意面', price:520, desc:'汉堡&意面', customizable:false },
+          { id:'P01', category:'pancake', name:'手抓饼', price:160, desc:'手抓饼系列', customizable:false },
+          { id:'P10', category:'pancake', name:'经典鸡肉卷', price:200, desc:'手抓饼系列', customizable:false },
+          { id:'P21', category:'pancake', name:'夏威夷风情披萨（8英寸）', price:780, desc:'手抓饼系列', customizable:false }
         ]
       }
     };
 
-    function peso(n) {
-      return `₱${Number(n).toFixed(0)}`;
-    }
-
+    function peso(n) { return `₱${Number(n).toFixed(0)}`; }
     function initTelegram() {
       if (!APP.telegram) return;
-      APP.telegram.ready();
-      APP.telegram.expand();
-      APP.telegram.setHeaderColor('#ffffff');
-      APP.telegram.setBackgroundColor('#f8fafc');
+      APP.telegram.ready(); APP.telegram.expand();
+      APP.telegram.setHeaderColor('#ffffff'); APP.telegram.setBackgroundColor('#f8fafc');
     }
-
     function pickEmoji(category) {
-      return ({
-        recommended:'✨', 'milk-tea':'🧋', 'fruit-tea':'🍋', 'milk-cover':'🥛', 'fresh-juice':'🍓',
-        coffee:'☕', fruits:'🍍', dessert:'🍰', goddess:'🌸', snacks:'🍟', hamburg:'🍔', pancake:'🌯'
-      })[category] || '🍽️';
+      return ({recommended:'✨','milk-tea':'🧋','fruit-tea':'🍋','milk-cover':'🥛','fresh-juice':'🍓',coffee:'☕',fruits:'🍍',dessert:'🍰',goddess:'🌸',snacks:'🍟',hamburg:'🍔',pancake:'🌯'})[category] || '🍽️';
     }
-
     function categoryClass(active) {
-      return active
-        ? 'w-full text-left px-3 py-3 text-sm font-semibold text-red-500 bg-white border-l-4 border-red-500'
-        : 'w-full text-left px-3 py-3 text-sm text-gray-600';
+      return active ? 'w-full text-left px-3 py-3 text-sm font-semibold text-red-500 bg-white border-l-4 border-red-500' : 'w-full text-left px-3 py-3 text-sm text-gray-600';
     }
-
     function optionChip(active) {
-      return active
-        ? 'px-3 py-2 rounded-full text-sm bg-red-500 text-white'
-        : 'px-3 py-2 rounded-full text-sm bg-gray-100 text-gray-700';
+      return active ? 'px-3 py-2 rounded-full text-sm bg-red-500 text-white' : 'px-3 py-2 rounded-full text-sm bg-gray-100 text-gray-700';
     }
-
     function renderCategories() {
-      const wrap = document.getElementById('categoryTabs');
-      wrap.innerHTML = APP.data.categories.map(cat => `
-        <button class="${categoryClass(APP.state.activeCategory === cat.id)}" onclick="setCategory('${cat.id}')">${cat.name}</button>
-      `).join('');
+      document.getElementById('categoryTabs').innerHTML = APP.data.categories.map(cat => `<button class="${categoryClass(APP.state.activeCategory===cat.id)}" onclick="setCategory('${cat.id}')">${cat.name}</button>`).join('');
     }
-
     function getFilteredProducts() {
       const keyword = APP.state.search.trim().toLowerCase();
       const source = keyword ? APP.data.products : APP.data.products.filter(p => p.category === APP.state.activeCategory);
       return source.filter(p => !keyword || p.name.toLowerCase().includes(keyword) || p.id.toLowerCase().includes(keyword) || p.desc.toLowerCase().includes(keyword));
     }
-
     function renderProducts() {
       const products = getFilteredProducts();
       const cat = APP.data.categories.find(x => x.id === APP.state.activeCategory);
       const isSearching = APP.state.search.trim().length > 0;
       document.getElementById('currentCategoryName').textContent = isSearching ? '搜索结果' : (cat?.name || '菜单');
-      document.getElementById('currentCategoryDesc').textContent = isSearching
-        ? `关键词：${APP.state.search.trim()} · 已从全部商品检索`
-        : (APP.categoryMeta[APP.state.activeCategory] || '请选择商品');
+      document.getElementById('currentCategoryDesc').textContent = isSearching ? `关键词：${APP.state.search.trim()} · 已从全部商品检索` : (APP.categoryMeta[APP.state.activeCategory] || '请选择商品');
       document.getElementById('resultCount').textContent = `${products.length} 款商品`;
-
       const list = document.getElementById('productList');
-      if (!products.length) {
-        list.innerHTML = '<div class="p-8 text-center text-sm text-gray-500">没有找到匹配商品</div>';
-        return;
-      }
-
+      if (!products.length) { list.innerHTML = '<div class="p-8 text-center text-sm text-gray-500">没有找到匹配商品</div>'; return; }
       list.innerHTML = products.map(p => `
         <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 bg-white">
           <button onclick="openProductModal('${p.id}')" class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl shrink-0">${pickEmoji(p.category)}</button>
@@ -345,41 +286,22 @@
             <div class="mt-1 text-red-500 font-bold">${peso(p.price)}</div>
           </button>
           <button onclick="quickAdd('${p.id}')" class="w-9 h-9 rounded-full bg-red-500 text-white text-xl leading-none shrink-0">+</button>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
-
-    function setCategory(id) {
-      APP.state.activeCategory = id;
-      renderCategories();
-      renderProducts();
-    }
-
+    function setCategory(id) { APP.state.activeCategory = id; renderCategories(); renderProducts(); }
     function quickAdd(productId) {
-      const p = APP.data.products.find(x => x.id === productId);
-      if (!p) return;
+      const p = APP.data.products.find(x => x.id === productId); if (!p) return;
       APP.state.cart.push({
-        id: 'cart_' + Date.now(),
-        productId: p.id,
-        name: p.name,
-        basePrice: p.price,
-        sugar: '100%',
-        ice: '正常冰',
-        toppings: [],
-        qty: 1
+        id: 'cart_' + Date.now(), productId: p.id, name: p.name, basePrice: p.price,
+        sugar: p.customizable ? APP.defaults.sugar : null,
+        ice: p.customizable ? APP.defaults.ice : null,
+        toppings: [], qty: 1, customizable: !!p.customizable
       });
       renderCartBadge();
     }
-
     function openProductModal(productId) {
       const product = APP.data.products.find(p => p.id === productId);
-      APP.state.currentProduct = product;
-      APP.state.currentQty = 1;
-      APP.state.currentSugar = '100%';
-      APP.state.currentIce = '正常冰';
-      APP.state.currentToppings = [];
-      APP.state.customizeOpen = false;
-
+      APP.state.currentProduct = product; APP.state.currentQty = 1; APP.state.currentSugar = APP.defaults.sugar; APP.state.currentIce = APP.defaults.ice; APP.state.currentToppings = []; APP.state.customizeOpen = false;
       document.getElementById('modalPhoto').textContent = pickEmoji(product.category);
       document.getElementById('modalCode').textContent = product.id;
       document.getElementById('modalName').textContent = product.name;
@@ -387,128 +309,66 @@
       document.getElementById('qtyValue').textContent = APP.state.currentQty;
       document.getElementById('customizePanel').classList.add('hidden');
       document.getElementById('toggleCustomizeIcon').textContent = '＋';
-
-      renderSugarOptions();
-      renderIceOptions();
-      renderToppings();
+      document.getElementById('toggleCustomizeBtn').classList.toggle('hidden', !product.customizable);
+      if (product.customizable) {
+        renderSugarOptions(); renderIceOptions(); renderToppings();
+      } else {
+        document.getElementById('sugarOptions').innerHTML = '';
+        document.getElementById('iceOptions').innerHTML = '';
+        document.getElementById('toppingOptions').innerHTML = '';
+      }
       updateAddButtonText();
       document.getElementById('productModal').classList.remove('hidden');
     }
-
-    function closeProductModal() {
-      document.getElementById('productModal').classList.add('hidden');
-    }
-
-    function renderSugarOptions() {
-      document.getElementById('sugarOptions').innerHTML = APP.options.sugar.map(item => `
-        <button class="${optionChip(APP.state.currentSugar === item)}" onclick="selectSugar('${item}')">${item}</button>
-      `).join('');
-    }
-
-    function renderIceOptions() {
-      document.getElementById('iceOptions').innerHTML = APP.options.ice.map(item => `
-        <button class="${optionChip(APP.state.currentIce === item)}" onclick="selectIce('${item}')">${item}</button>
-      `).join('');
-    }
-
-    function renderToppings() {
-      document.getElementById('toppingOptions').innerHTML = APP.options.toppings.map(item => `
-        <button class="${optionChip(APP.state.currentToppings.includes(item.name))}" onclick="toggleTopping('${item.name}')">${item.name} +${item.price}</button>
-      `).join('');
-      updateAddButtonText();
-    }
-
-    function selectSugar(v) {
-      APP.state.currentSugar = v;
-      renderSugarOptions();
-    }
-
-    function selectIce(v) {
-      APP.state.currentIce = v;
-      renderIceOptions();
-    }
-
-    function toggleTopping(name) {
-      const idx = APP.state.currentToppings.indexOf(name);
-      if (idx >= 0) APP.state.currentToppings.splice(idx, 1);
-      else APP.state.currentToppings.push(name);
-      renderToppings();
-    }
-
-    function getToppingPrice(names) {
-      return names.reduce((sum, name) => {
-        const t = APP.options.toppings.find(x => x.name === name);
-        return sum + (t ? t.price : 0);
-      }, 0);
-    }
-
+    function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
+    function renderSugarOptions() { document.getElementById('sugarOptions').innerHTML = APP.options.sugar.map(item => `<button class="${optionChip(APP.state.currentSugar===item)}" onclick="selectSugar('${item}')">${item}</button>`).join(''); }
+    function renderIceOptions() { document.getElementById('iceOptions').innerHTML = APP.options.ice.map(item => `<button class="${optionChip(APP.state.currentIce===item)}" onclick="selectIce('${item}')">${item}</button>`).join(''); }
+    function renderToppings() { document.getElementById('toppingOptions').innerHTML = APP.options.toppings.map(item => `<button class="${optionChip(APP.state.currentToppings.includes(item.name))}" onclick="toggleTopping('${item.name}')">${item.name} +${item.price}</button>`).join(''); }
+    function selectSugar(v) { APP.state.currentSugar = v; renderSugarOptions(); }
+    function selectIce(v) { APP.state.currentIce = v; renderIceOptions(); }
+    function toggleTopping(name) { const idx = APP.state.currentToppings.indexOf(name); if (idx >= 0) APP.state.currentToppings.splice(idx,1); else APP.state.currentToppings.push(name); renderToppings(); updateAddButtonText(); }
+    function getToppingPrice(names) { return names.reduce((sum, name) => { const t = APP.options.toppings.find(x => x.name === name); return sum + (t ? t.price : 0); }, 0); }
     function updateAddButtonText() {
-      const p = APP.state.currentProduct;
-      if (!p) return;
-      const total = (p.price + getToppingPrice(APP.state.currentToppings)) * APP.state.currentQty;
+      const p = APP.state.currentProduct; if (!p) return;
+      const toppingTotal = p.customizable ? getToppingPrice(APP.state.currentToppings) : 0;
+      const total = (p.price + toppingTotal) * APP.state.currentQty;
       document.getElementById('addToCartBtn').textContent = `加入购物车 · ${peso(total)}`;
     }
-
     function toggleCustomizePanel() {
+      if (!APP.state.currentProduct?.customizable) return;
       APP.state.customizeOpen = !APP.state.customizeOpen;
       document.getElementById('customizePanel').classList.toggle('hidden', !APP.state.customizeOpen);
       document.getElementById('toggleCustomizeIcon').textContent = APP.state.customizeOpen ? '－' : '＋';
     }
-
     function addCurrentToCart() {
-      const p = APP.state.currentProduct;
-      if (!p) return;
+      const p = APP.state.currentProduct; if (!p) return;
       APP.state.cart.push({
-        id: `cart_${Date.now()}`,
-        productId: p.id,
-        name: p.name,
-        basePrice: p.price,
-        sugar: APP.state.currentSugar,
-        ice: APP.state.currentIce,
-        toppings: [...APP.state.currentToppings],
-        qty: APP.state.currentQty
+        id: `cart_${Date.now()}`, productId: p.id, name: p.name, basePrice: p.price,
+        sugar: p.customizable ? APP.state.currentSugar : null,
+        ice: p.customizable ? APP.state.currentIce : null,
+        toppings: p.customizable ? [...APP.state.currentToppings] : [],
+        qty: APP.state.currentQty, customizable: !!p.customizable
       });
-      renderCartBadge();
-      closeProductModal();
+      renderCartBadge(); closeProductModal();
     }
-
     function renderCartBadge() {
-      const totalQty = APP.state.cart.reduce((sum, item) => sum + item.qty, 0);
-      const total = getCartTotal();
-      document.getElementById('cartCount').textContent = totalQty;
-      document.getElementById('floatingCartCount').textContent = totalQty;
-      document.getElementById('floatingCartTotal').textContent = peso(total);
+      const totalQty = APP.state.cart.reduce((sum, item) => sum + item.qty, 0); const total = getCartTotal();
+      document.getElementById('cartCount').textContent = totalQty; document.getElementById('floatingCartCount').textContent = totalQty; document.getElementById('floatingCartTotal').textContent = peso(total);
     }
-
-    function openCart() {
-      renderCart();
-      document.getElementById('cartDrawer').classList.remove('hidden');
-    }
-
-    function closeCart() {
-      document.getElementById('cartDrawer').classList.add('hidden');
-    }
-
-    function getItemUnitPrice(item) {
-      return item.basePrice + getToppingPrice(item.toppings);
-    }
-
-    function getCartTotal() {
-      return APP.state.cart.reduce((sum, item) => sum + getItemUnitPrice(item) * item.qty, 0);
-    }
-
+    function openCart() { renderCart(); document.getElementById('cartDrawer').classList.remove('hidden'); }
+    function closeCart() { document.getElementById('cartDrawer').classList.add('hidden'); }
+    function getItemUnitPrice(item) { return item.basePrice + (item.customizable ? getToppingPrice(item.toppings) : 0); }
+    function getCartTotal() { return APP.state.cart.reduce((sum, item) => sum + getItemUnitPrice(item) * item.qty, 0); }
     function renderCart() {
       const box = document.getElementById('cartItems');
-      if (!APP.state.cart.length) {
-        box.innerHTML = '<div class="text-sm text-gray-500 text-center py-10">购物车还是空的</div>';
-      } else {
+      if (!APP.state.cart.length) { box.innerHTML = '<div class="text-sm text-gray-500 text-center py-10">购物车还是空的</div>'; }
+      else {
         box.innerHTML = APP.state.cart.map(item => `
           <div class="border border-gray-100 rounded-2xl p-3">
             <div class="flex items-start justify-between gap-3">
               <div class="flex-1">
                 <div class="font-semibold">${item.name}</div>
-                <div class="text-xs text-gray-500 mt-1">甜度 ${item.sugar} · 冰度 ${item.ice}</div>
-                <div class="text-xs text-gray-500 mt-1">小料：${item.toppings.length ? item.toppings.join('、') : '无'}</div>
+                ${item.customizable ? `<div class="text-xs text-gray-500 mt-1">甜度 ${item.sugar} · 冰度 ${item.ice}</div><div class="text-xs text-gray-500 mt-1">小料：${item.toppings.length ? item.toppings.join('、') : '无'}</div>` : `<div class="text-xs text-gray-500 mt-1">标准规格</div>`}
                 <div class="text-sm text-red-500 font-bold mt-2">${peso(getItemUnitPrice(item))}</div>
               </div>
               <div class="flex items-center gap-2">
@@ -517,112 +377,49 @@
                 <button class="w-8 h-8 rounded-full bg-gray-100" onclick="changeCartQty('${item.id}', 1)">+</button>
               </div>
             </div>
-          </div>
-        `).join('');
+          </div>`).join('');
       }
       document.getElementById('cartTotal').textContent = peso(getCartTotal());
     }
-
-    function changeCartQty(id, delta) {
-      const item = APP.state.cart.find(x => x.id === id);
-      if (!item) return;
-      item.qty += delta;
-      if (item.qty <= 0) APP.state.cart = APP.state.cart.filter(x => x.id !== id);
-      renderCart();
-      renderCartBadge();
-    }
-
-    function openCheckout() {
-      if (!APP.state.cart.length) return alert('请先添加商品');
-      closeCart();
-      renderCheckoutSummary();
-      document.getElementById('checkoutDrawer').classList.remove('hidden');
-    }
-
-    function closeCheckout() {
-      document.getElementById('checkoutDrawer').classList.add('hidden');
-    }
-
+    function changeCartQty(id, delta) { const item = APP.state.cart.find(x => x.id === id); if (!item) return; item.qty += delta; if (item.qty <= 0) APP.state.cart = APP.state.cart.filter(x => x.id !== id); renderCart(); renderCartBadge(); }
+    function openCheckout() { if (!APP.state.cart.length) return alert('请先添加商品'); closeCart(); renderCheckoutSummary(); document.getElementById('checkoutDrawer').classList.remove('hidden'); }
+    function closeCheckout() { document.getElementById('checkoutDrawer').classList.add('hidden'); }
     function renderCheckoutSummary() {
       const box = document.getElementById('checkoutSummary');
       box.innerHTML = APP.state.cart.map(item => `
         <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-2">
           <div>
             <div>${item.name} × ${item.qty}</div>
-            <div class="text-gray-500 text-xs">${item.sugar} / ${item.ice}${item.toppings.length ? ' / ' + item.toppings.join('、') : ''}</div>
+            <div class="text-gray-500 text-xs">${item.customizable ? `${item.sugar} / ${item.ice}${item.toppings.length ? ' / ' + item.toppings.join('、') : ''}` : '标准规格'}</div>
           </div>
           <div class="font-medium">${peso(getItemUnitPrice(item) * item.qty)}</div>
-        </div>
-      `).join('') + `
-        <div class="pt-2 flex items-center justify-between font-bold">
-          <span>合计</span>
-          <span>${peso(getCartTotal())}</span>
-        </div>
-      `;
+        </div>`).join('') + `<div class="pt-2 flex items-center justify-between font-bold"><span>合计</span><span>${peso(getCartTotal())}</span></div>`;
     }
-
     function buildOrderPayload() {
       return {
         orderNo: `TT${Date.now()}`,
-        customer: {
-          name: document.getElementById('customerName').value.trim(),
-          phone: document.getElementById('customerPhone').value.trim(),
-          address: document.getElementById('customerAddress').value.trim(),
-          note: document.getElementById('customerNote').value.trim()
-        },
-        items: APP.state.cart.map(item => ({
-          productId: item.productId,
-          name: item.name,
-          qty: item.qty,
-          sugar: item.sugar,
-          ice: item.ice,
-          toppings: item.toppings,
-          unitPrice: getItemUnitPrice(item),
-          subtotal: getItemUnitPrice(item) * item.qty
-        })),
-        totalAmount: getCartTotal(),
-        createdAt: new Date().toISOString()
+        customer: { name: document.getElementById('customerName').value.trim(), phone: document.getElementById('customerPhone').value.trim(), address: document.getElementById('customerAddress').value.trim(), note: document.getElementById('customerNote').value.trim() },
+        items: APP.state.cart.map(item => ({ productId: item.productId, name: item.name, qty: item.qty, sugar: item.sugar, ice: item.ice, toppings: item.toppings, unitPrice: getItemUnitPrice(item), subtotal: getItemUnitPrice(item) * item.qty, customizable: item.customizable })),
+        totalAmount: getCartTotal(), createdAt: new Date().toISOString()
       };
     }
-
     function submitOrder() {
       const payload = buildOrderPayload();
       if (!payload.customer.name) return alert('请填写联系人姓名');
       if (!payload.customer.phone) return alert('请填写联系电话');
       if (!payload.customer.address) return alert('请填写收货地址');
-      console.log('DAY1_ORDER_PAYLOAD', payload);
-      alert(`演示版下单成功\n订单号：${payload.orderNo}`);
-      APP.state.cart = [];
-      renderCartBadge();
-      closeCheckout();
+      console.log('DAY1_ORDER_PAYLOAD', payload); alert(`演示版下单成功
+订单号：${payload.orderNo}`); APP.state.cart = []; renderCartBadge(); closeCheckout();
     }
-
-    document.getElementById('qtyMinus').addEventListener('click', () => {
-      APP.state.currentQty = Math.max(1, APP.state.currentQty - 1);
-      document.getElementById('qtyValue').textContent = APP.state.currentQty;
-      updateAddButtonText();
-    });
-
-    document.getElementById('qtyPlus').addEventListener('click', () => {
-      APP.state.currentQty += 1;
-      document.getElementById('qtyValue').textContent = APP.state.currentQty;
-      updateAddButtonText();
-    });
-
+    document.getElementById('qtyMinus').addEventListener('click', () => { APP.state.currentQty = Math.max(1, APP.state.currentQty - 1); document.getElementById('qtyValue').textContent = APP.state.currentQty; updateAddButtonText(); });
+    document.getElementById('qtyPlus').addEventListener('click', () => { APP.state.currentQty += 1; document.getElementById('qtyValue').textContent = APP.state.currentQty; updateAddButtonText(); });
     document.getElementById('addToCartBtn').addEventListener('click', addCurrentToCart);
     document.getElementById('cartBtn').addEventListener('click', openCart);
     document.getElementById('goCheckoutBtn').addEventListener('click', openCheckout);
     document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
-    document.getElementById('searchInput').addEventListener('input', e => {
-      APP.state.search = e.target.value;
-      renderProducts();
-    });
+    document.getElementById('searchInput').addEventListener('input', e => { APP.state.search = e.target.value; renderProducts(); });
     document.getElementById('toggleCustomizeBtn').addEventListener('click', toggleCustomizePanel);
-
-    initTelegram();
-    renderCategories();
-    renderProducts();
-    renderCartBadge();
+    initTelegram(); renderCategories(); renderProducts(); renderCartBadge();
   </script>
 </body>
 </html>
