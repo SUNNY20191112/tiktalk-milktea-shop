@@ -8,235 +8,222 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --bg: #f6efe6;
-      --paper: #fffaf4;
-      --gold: #b9803b;
-      --gold-deep: #8e5f27;
-      --ink: #3d2b1f;
-      --muted: #8d7763;
-      --line: rgba(125, 86, 39, 0.14);
-      --card: rgba(255,255,255,0.82);
+      --bg1: #fff7fb;
+      --bg2: #f2fbff;
+      --card: rgba(255,255,255,.88);
+      --line: rgba(15,23,42,.08);
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #ff5fa2;
+      --primary-2: #7c3aed;
+      --accent: #22c55e;
+      --chip: #f4f7fb;
+      --shadow: 0 12px 32px rgba(31,41,55,.10);
+      --bg-image: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,0));
     }
+    * { box-sizing: border-box; }
     body {
+      margin: 0;
+      color: var(--text);
       background:
-        radial-gradient(circle at top right, rgba(210, 167, 96, .18), transparent 28%),
-        radial-gradient(circle at top left, rgba(255, 255, 255, .65), transparent 24%),
-        linear-gradient(180deg, #f9f3ec 0%, #f3eadf 100%);
-      color: var(--ink);
+        var(--bg-image),
+        radial-gradient(circle at top left, rgba(255,95,162,.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(124,58,237,.10), transparent 26%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      background-attachment: fixed;
+      min-height: 100vh;
     }
-    .app-shell {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.7)),
-        linear-gradient(180deg, #f9f3ec 0%, #f4ebdf 100%);
-      backdrop-filter: blur(14px);
-    }
-    .safe-bottom { padding-bottom: calc(118px + env(safe-area-inset-bottom)); }
-    .soft-card {
+    .safe-bottom { padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
+    .glass {
       background: var(--card);
+      backdrop-filter: blur(16px);
       border: 1px solid var(--line);
-      box-shadow: 0 10px 24px rgba(94, 64, 33, .08);
-      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
     .line-clamp-2 {
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .category-chip::-webkit-scrollbar,
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .menu-card:hover { transform: translateY(-1px); }
-    .hero-pattern {
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,0)),
-        radial-gradient(circle at 10% 10%, rgba(255,255,255,.18), transparent 30%),
-        linear-gradient(135deg, #7b4d28 0%, #b9803b 58%, #dfbb82 100%);
+    .hero {
+      background: linear-gradient(135deg, #ff5fa2 0%, #ff8a5b 45%, #7c3aed 100%);
+      color: white;
+      position: relative;
+      overflow: hidden;
     }
-    .ornament {
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
-      height: 1px;
+    .hero::after {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 140px;
+      height: 140px;
+      background: rgba(255,255,255,.18);
+      border-radius: 999px;
+      filter: blur(8px);
     }
-    .floating-checkout {
-      background: rgba(255,250,244,.92);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid var(--line);
-      box-shadow: 0 -6px 20px rgba(91, 61, 27, .08);
+    .chip-active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      box-shadow: 0 8px 20px rgba(124,58,237,.22);
+    }
+    .bg-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      border: 2px solid transparent;
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+    .bg-thumb.active { border-color: var(--primary); }
+    .product-photo {
+      background: linear-gradient(135deg, #ffe2f0, #e8f4ff);
     }
   </style>
 </head>
 <body>
-  <div id="app" class="app-shell max-w-md mx-auto min-h-screen safe-bottom shadow-[0_8px_30px_rgba(78,54,24,.08)]">
-    <header class="sticky top-0 z-30 px-4 pt-4 pb-3 bg-gradient-to-b from-[#f8f0e7]/95 to-[#f8f0e7]/70 backdrop-blur-xl border-b border-[rgba(125,86,39,.10)]">
-      <div class="hero-pattern rounded-[28px] p-4 text-white shadow-[0_14px_30px_rgba(94,64,33,.18)] overflow-hidden relative">
-        <div class="absolute top-0 right-0 w-28 h-28 rounded-full bg-white/10 blur-2xl"></div>
-        <div class="relative">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="text-[11px] tracking-[0.28em] uppercase text-white/75">TikTalk Milktea</div>
-              <h1 class="mt-1 text-2xl font-bold tracking-wide">茶语奶茶</h1>
-              <p class="mt-1 text-sm text-white/80">新中式茶饮 · 小食甜品 · Telegram Mini App</p>
-            </div>
-            <button id="cartBtn" class="soft-card bg-white/15 border-white/15 text-white px-4 py-2.5 rounded-full text-sm font-semibold">
-              购物袋 <span id="cartCount" class="ml-1">0</span>
-            </button>
+  <div id="app" class="max-w-md mx-auto min-h-screen safe-bottom px-3 pt-3">
+    <header class="sticky top-0 z-30 pb-3 backdrop-blur-sm">
+      <div class="hero rounded-[28px] p-4 shadow-[0_16px_36px_rgba(124,58,237,.20)]">
+        <div class="relative z-10 flex items-start justify-between gap-3">
+          <div>
+            <div class="text-[11px] tracking-[0.28em] uppercase text-white/75">TikTalk Milktea</div>
+            <h1 class="mt-1 text-[28px] font-black leading-none">茶语奶茶</h1>
+            <p class="mt-2 text-sm text-white/85">年轻感 · 明亮配色 · 快速点单</p>
           </div>
-          <div class="ornament mt-4 mb-3"></div>
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="rounded-2xl bg-white/10 px-2 py-2">
-              <div class="text-[11px] text-white/70">风格</div>
-              <div class="text-sm font-semibold">茶饮轻奢</div>
-            </div>
-            <div class="rounded-2xl bg-white/10 px-2 py-2">
-              <div class="text-[11px] text-white/70">下单</div>
-              <div class="text-sm font-semibold">即时点餐</div>
-            </div>
-            <div class="rounded-2xl bg-white/10 px-2 py-2">
-              <div class="text-[11px] text-white/70">支持</div>
-              <div class="text-sm font-semibold">备注定制</div>
-            </div>
-          </div>
+          <button id="cartBtn" class="glass bg-white/18 border-white/20 text-white px-4 py-2.5 rounded-full text-sm font-semibold">
+            购物车 <span id="cartCount">0</span>
+          </button>
         </div>
       </div>
 
-      <div class="mt-4 flex items-center gap-2 soft-card rounded-2xl px-3 py-2.5">
-        <span class="text-sm text-[var(--gold)]">🔎</span>
-        <input id="searchInput" class="w-full bg-transparent outline-none text-sm placeholder:text-[var(--muted)]" placeholder="搜索饮品、小吃、甜品" />
+      <div class="glass rounded-[24px] mt-3 p-3">
+        <div class="flex items-center gap-2 rounded-2xl bg-white px-3 py-3 border border-[rgba(15,23,42,.06)]">
+          <span class="text-base">🔍</span>
+          <input id="searchInput" class="w-full outline-none text-sm placeholder:text-slate-400" placeholder="搜索全部商品" />
+        </div>
+        <div class="mt-3">
+          <div class="text-xs font-semibold text-slate-500 mb-2">切换背景</div>
+          <div id="bgPicker" class="hide-scrollbar flex gap-2 overflow-x-auto"></div>
+        </div>
       </div>
 
-      <div id="categoryTabs" class="category-chip hide-scrollbar flex gap-2 overflow-x-auto pt-3"></div>
+      <div id="categoryTabs" class="hide-scrollbar flex gap-2 overflow-x-auto pt-3"></div>
     </header>
 
-    <main class="px-4 pb-6">
-      <section class="pt-4">
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <div id="currentCategoryName" class="text-lg font-bold">店长推荐</div>
-            <div id="currentCategoryDesc" class="text-xs text-[var(--muted)] mt-1">精选人气款，适合首次下单</div>
-          </div>
-          <div class="text-xs text-[var(--muted)]" id="resultCount">0 款商品</div>
+    <main class="pb-4">
+      <div class="flex items-end justify-between px-1 py-2">
+        <div>
+          <div id="currentCategoryName" class="text-xl font-black">店长推荐</div>
+          <div id="currentCategoryDesc" class="text-xs text-slate-500 mt-1">精选人气款</div>
         </div>
-        <div id="productList" class="grid grid-cols-2 gap-3"></div>
-      </section>
+        <div id="resultCount" class="text-xs text-slate-500">0 款商品</div>
+      </div>
+      <section id="productList" class="grid grid-cols-2 gap-3"></section>
     </main>
   </div>
 
-  <div id="productModal" class="hidden fixed inset-0 z-40 bg-black/45 backdrop-blur-sm">
-    <div class="absolute inset-x-0 bottom-0 max-w-md mx-auto bg-[#fffaf4] rounded-t-[30px] p-4 border border-[rgba(125,86,39,.10)] shadow-[0_-12px_30px_rgba(78,54,24,.12)] max-h-[92vh] overflow-auto">
+  <div id="productModal" class="hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm">
+    <div class="absolute inset-x-0 bottom-0 max-w-md mx-auto rounded-t-[30px] bg-white p-4 max-h-[92vh] overflow-auto shadow-[0_-12px_30px_rgba(31,41,55,.15)]">
       <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
-      <div class="soft-card rounded-[26px] overflow-hidden">
-        <div class="hero-pattern p-5 text-white">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="text-[11px] tracking-[0.24em] uppercase text-white/70">Menu Item</div>
-              <h2 id="modalName" class="mt-1 text-xl font-bold"></h2>
-              <p id="modalPrice" class="mt-2 text-white/90 text-sm"></p>
-            </div>
-            <button onclick="closeProductModal()" class="w-9 h-9 rounded-full bg-white/15 text-xl leading-none">×</button>
-          </div>
+      <div class="glass rounded-[28px] p-3">
+        <div class="product-photo rounded-[24px] h-52 flex items-center justify-center text-7xl" id="modalPhoto">🧋</div>
+        <div class="pt-4">
+          <div class="text-xs text-slate-500" id="modalCode"></div>
+          <div class="mt-1 text-xl font-black" id="modalName"></div>
+          <div class="mt-2 text-lg font-bold text-[var(--primary)]" id="modalPrice"></div>
         </div>
-        <div class="p-4 space-y-4">
-          <div class="grid grid-cols-3 gap-3 text-sm">
-            <div class="rounded-2xl bg-[#f8f1e7] p-3 border border-[rgba(125,86,39,.08)]">
-              <div class="text-[var(--muted)] text-xs">商品价格</div>
-              <div id="basePriceText" class="mt-1 font-semibold"></div>
-            </div>
-            <div class="rounded-2xl bg-[#f8f1e7] p-3 border border-[rgba(125,86,39,.08)]">
-              <div class="text-[var(--muted)] text-xs">加料价格</div>
-              <div id="toppingPriceText" class="mt-1 font-semibold">₱0</div>
-            </div>
-            <div class="rounded-2xl bg-[#fff3de] p-3 border border-[rgba(185,128,59,.18)]">
-              <div class="text-[var(--muted)] text-xs">当前单价</div>
-              <div id="currentUnitPriceText" class="mt-1 font-bold text-[var(--gold-deep)]"></div>
-            </div>
-          </div>
 
+        <button id="toggleCustomizeBtn" class="w-full mt-4 rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 flex items-center justify-between text-sm font-semibold">
+          <span>甜度 / 冰度 / 小料 / 规格</span>
+          <span id="toggleCustomizeIcon">＋</span>
+        </button>
+
+        <div id="customizePanel" class="hidden mt-4 space-y-4">
           <div>
             <div class="text-sm font-semibold mb-2">甜度</div>
             <div id="sugarOptions" class="flex flex-wrap gap-2"></div>
           </div>
-
           <div>
             <div class="text-sm font-semibold mb-2">冰度</div>
             <div id="iceOptions" class="flex flex-wrap gap-2"></div>
           </div>
-
           <div>
-            <div class="text-sm font-semibold mb-2">加料</div>
+            <div class="text-sm font-semibold mb-2">小料</div>
             <div id="toppingOptions" class="flex flex-wrap gap-2"></div>
           </div>
-
-          <div class="soft-card rounded-2xl p-3 flex items-center justify-between">
-            <div>
-              <div class="text-xs text-[var(--muted)]">数量</div>
-              <div class="text-sm font-semibold">可自由调整份数</div>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="rounded-2xl bg-slate-50 p-3 border border-slate-200">
+              <div class="text-slate-500 text-xs">商品价格</div>
+              <div id="basePriceText" class="mt-1 font-semibold"></div>
             </div>
-            <div class="flex items-center gap-3">
-              <button id="qtyMinus" class="w-10 h-10 rounded-full bg-[#f5eadc] text-lg">-</button>
-              <span id="qtyValue" class="w-8 text-center font-semibold">1</span>
-              <button id="qtyPlus" class="w-10 h-10 rounded-full bg-[#f5eadc] text-lg">+</button>
+            <div class="rounded-2xl bg-slate-50 p-3 border border-slate-200">
+              <div class="text-slate-500 text-xs">小料价格</div>
+              <div id="toppingPriceText" class="mt-1 font-semibold">₱0</div>
             </div>
           </div>
+        </div>
 
-          <button id="addToCartBtn" class="w-full py-3.5 rounded-full bg-[var(--gold)] text-white font-semibold shadow-[0_10px_20px_rgba(185,128,59,.24)]">加入购物车</button>
+        <div class="mt-4 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 rounded-full bg-slate-50 px-2 py-2 border border-slate-200">
+            <button id="qtyMinus" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-lg">-</button>
+            <span id="qtyValue" class="w-6 text-center font-semibold">1</span>
+            <button id="qtyPlus" class="w-9 h-9 rounded-full bg-white border border-slate-200 text-lg">+</button>
+          </div>
+          <button id="addToCartBtn" class="flex-1 rounded-full px-5 py-3.5 text-white font-semibold bg-gradient-to-r from-pink-500 to-violet-600 shadow-[0_10px_20px_rgba(124,58,237,.22)]">加入购物车</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="cartDrawer" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm">
-    <div class="absolute inset-x-0 bottom-0 max-w-md mx-auto bg-[#fffaf4] rounded-t-[30px] p-4 max-h-[88vh] overflow-hidden flex flex-col border border-[rgba(125,86,39,.10)]">
+  <div id="cartDrawer" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm">
+    <div class="absolute inset-x-0 bottom-0 max-w-md mx-auto bg-white rounded-t-[30px] p-4 max-h-[88vh] overflow-hidden flex flex-col">
       <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
       <div class="flex items-center justify-between mb-3">
-        <h2 class="text-xl font-bold">购物袋</h2>
-        <button onclick="closeCart()" class="w-9 h-9 rounded-full bg-[#f2e7d9] text-xl leading-none">×</button>
+        <h2 class="text-xl font-black">购物车</h2>
+        <button onclick="closeCart()" class="w-9 h-9 rounded-full bg-slate-100 text-xl leading-none">×</button>
       </div>
       <div id="cartItems" class="flex-1 overflow-auto space-y-3 pr-1"></div>
-      <div class="border-t border-[rgba(125,86,39,.10)] pt-4 mt-4">
-        <div class="flex items-center justify-between mb-3 text-base font-semibold">
+      <div class="pt-4 mt-4 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-3 text-base font-bold">
           <span>合计</span>
           <span id="cartTotal">₱0</span>
         </div>
-        <button id="goCheckoutBtn" class="w-full py-3.5 rounded-full bg-[var(--gold)] text-white font-semibold">去结算</button>
+        <button id="goCheckoutBtn" class="w-full py-3.5 rounded-full text-white font-semibold bg-gradient-to-r from-pink-500 to-violet-600">去结算</button>
       </div>
     </div>
   </div>
 
-  <div id="checkoutDrawer" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm">
-    <div class="absolute inset-x-0 bottom-0 max-w-md mx-auto bg-[#fffaf4] rounded-t-[30px] p-4 max-h-[92vh] overflow-auto border border-[rgba(125,86,39,.10)]">
+  <div id="checkoutDrawer" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm">
+    <div class="absolute inset-x-0 bottom-0 max-w-md mx-auto bg-white rounded-t-[30px] p-4 max-h-[92vh] overflow-auto">
       <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
       <div class="flex items-center justify-between mb-3">
-        <h2 class="text-xl font-bold">确认订单</h2>
-        <button onclick="closeCheckout()" class="w-9 h-9 rounded-full bg-[#f2e7d9] text-xl leading-none">×</button>
+        <h2 class="text-xl font-black">确认订单</h2>
+        <button onclick="closeCheckout()" class="w-9 h-9 rounded-full bg-slate-100 text-xl leading-none">×</button>
       </div>
-
-      <div class="soft-card rounded-[26px] p-4 space-y-3">
-        <div>
-          <div class="text-sm font-semibold mb-2">收货信息</div>
-          <div class="grid gap-3">
-            <input id="customerName" class="w-full border border-[rgba(125,86,39,.10)] bg-white rounded-2xl px-4 py-3 outline-none" placeholder="联系人姓名" />
-            <input id="customerPhone" class="w-full border border-[rgba(125,86,39,.10)] bg-white rounded-2xl px-4 py-3 outline-none" placeholder="联系电话" />
-            <textarea id="customerAddress" class="w-full border border-[rgba(125,86,39,.10)] bg-white rounded-2xl px-4 py-3 min-h-[100px] outline-none" placeholder="收货地址"></textarea>
-            <textarea id="customerNote" class="w-full border border-[rgba(125,86,39,.10)] bg-white rounded-2xl px-4 py-3 min-h-[90px] outline-none" placeholder="备注（例如少冰、餐具、配送提示）"></textarea>
-          </div>
-        </div>
+      <div class="glass rounded-[24px] p-4 space-y-3">
+        <input id="customerName" class="w-full border border-slate-200 rounded-2xl px-4 py-3 outline-none" placeholder="联系人姓名" />
+        <input id="customerPhone" class="w-full border border-slate-200 rounded-2xl px-4 py-3 outline-none" placeholder="联系电话" />
+        <textarea id="customerAddress" class="w-full border border-slate-200 rounded-2xl px-4 py-3 min-h-[100px] outline-none" placeholder="收货地址"></textarea>
+        <textarea id="customerNote" class="w-full border border-slate-200 rounded-2xl px-4 py-3 min-h-[90px] outline-none" placeholder="备注"></textarea>
       </div>
-
-      <div class="soft-card rounded-[26px] p-4 mt-4">
+      <div class="glass rounded-[24px] p-4 mt-4">
         <div class="text-sm font-semibold mb-3">订单预览</div>
         <div id="checkoutSummary" class="space-y-2 text-sm"></div>
       </div>
-
-      <button id="submitOrderBtn" class="w-full mt-4 py-3.5 rounded-full bg-emerald-600 text-white font-semibold shadow-[0_10px_20px_rgba(16,185,129,.18)]">提交订单（当前为演示版）</button>
+      <button id="submitOrderBtn" class="w-full mt-4 py-3.5 rounded-full text-white font-semibold bg-gradient-to-r from-emerald-500 to-teal-500">提交订单（演示版）</button>
     </div>
   </div>
 
-  <div class="floating-checkout fixed bottom-0 inset-x-0 z-20 max-w-md mx-auto px-4 pt-3 pb-[calc(14px+env(safe-area-inset-bottom))]">
-    <div class="soft-card rounded-[24px] px-4 py-3 flex items-center justify-between gap-3">
+  <div class="fixed bottom-0 inset-x-0 z-20 max-w-md mx-auto px-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
+    <div class="glass rounded-[24px] px-4 py-3 flex items-center justify-between gap-3 bg-white/92">
       <div>
-        <div class="text-xs text-[var(--muted)]">已选商品</div>
-        <div class="text-base font-bold"><span id="floatingCartCount">0</span> 件 · <span id="floatingCartTotal">₱0</span></div>
+        <div class="text-xs text-slate-500">已选商品</div>
+        <div class="text-base font-black"><span id="floatingCartCount">0</span> 件 · <span id="floatingCartTotal">₱0</span></div>
       </div>
-      <button onclick="openCart()" class="px-5 py-3 rounded-full bg-[var(--gold)] text-white font-semibold whitespace-nowrap">查看购物袋</button>
+      <button onclick="openCart()" class="px-5 py-3 rounded-full text-white font-semibold bg-gradient-to-r from-pink-500 to-violet-600 whitespace-nowrap">查看购物车</button>
     </div>
   </div>
 
@@ -251,54 +238,49 @@
         currentSugar: '100%',
         currentIce: '正常冰',
         currentToppings: [],
-        search: ''
+        search: '',
+        customizeOpen: false,
+        activeBg: 0
       },
       options: {
         sugar: ['0%', '25%', '50%', '75%', '100%'],
         ice: ['去冰', '少冰', '正常冰', '多冰'],
         toppings: [
-          { name: '珍珠', price: 20 },
-          { name: '西米', price: 30 },
-          { name: '椰果', price: 20 },
-          { name: '布丁', price: 20 },
-          { name: '仙草冻', price: 20 },
-          { name: '红豆', price: 20 },
-          { name: '燕麦', price: 30 },
-          { name: '血糯米', price: 30 },
-          { name: '冰粉', price: 30 },
-          { name: '芋圆', price: 30 },
-          { name: '脆啵啵', price: 30 },
-          { name: '爆爆珠', price: 30 }
+          { name: '珍珠', price: 20 }, { name: '西米', price: 30 }, { name: '椰果', price: 20 },
+          { name: '布丁', price: 20 }, { name: '仙草冻', price: 20 }, { name: '红豆', price: 20 },
+          { name: '燕麦', price: 30 }, { name: '血糯米', price: 30 }, { name: '冰粉', price: 30 },
+          { name: '芋圆', price: 30 }, { name: '脆啵啵', price: 30 }, { name: '爆爆珠', price: 30 }
         ]
       },
+      backgrounds: [
+        {
+          thumb: 'linear-gradient(135deg,#ff5fa2,#7c3aed)',
+          value: 'linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,0)), radial-gradient(circle at top left, rgba(255,95,162,.12), transparent 28%), radial-gradient(circle at top right, rgba(124,58,237,.10), transparent 26%), linear-gradient(180deg, #fff7fb, #f2fbff)'
+        },
+        {
+          thumb: 'linear-gradient(135deg,#22c55e,#06b6d4)',
+          value: 'linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,0)), radial-gradient(circle at top left, rgba(34,197,94,.12), transparent 28%), radial-gradient(circle at top right, rgba(6,182,212,.10), transparent 26%), linear-gradient(180deg, #f5fff8, #eefcff)'
+        },
+        {
+          thumb: 'linear-gradient(135deg,#f59e0b,#ef4444)',
+          value: 'linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,0)), radial-gradient(circle at top left, rgba(245,158,11,.14), transparent 28%), radial-gradient(circle at top right, rgba(239,68,68,.10), transparent 26%), linear-gradient(180deg, #fffaf2, #fff4f8)'
+        },
+        {
+          thumb: 'linear-gradient(135deg,#0ea5e9,#6366f1)',
+          value: 'linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,0)), radial-gradient(circle at top left, rgba(14,165,233,.14), transparent 28%), radial-gradient(circle at top right, rgba(99,102,241,.10), transparent 26%), linear-gradient(180deg, #f4fbff, #f7f5ff)'
+        }
+      ],
       categoryMeta: {
-        recommended: '精选人气款，适合首次下单',
-        'milk-tea': '经典奶茶与欧蕾系列',
-        'fruit-tea': '清爽鲜果风味茶饮',
-        'milk-cover': '奶盖与鲜乳茶系列',
-        'fresh-juice': '鲜榨、奶昔与冰沙',
-        coffee: '咖啡与双皮奶饮品',
-        fruits: '新鲜水果与切盒',
-        dessert: '甜品、蛋糕与冰品',
-        goddess: '轻养生与少女感甜品',
-        snacks: '炸物、拼盘与小吃',
-        hamburg: '汉堡、热狗、意面主食',
-        pancake: '手抓饼、卷饼与披萨'
+        recommended: '精选人气款', 'milk-tea': '经典奶茶与欧蕾', 'fruit-tea': '清爽鲜果风味', 'milk-cover': '奶盖与鲜乳茶',
+        'fresh-juice': '鲜榨、奶昔与冰沙', coffee: '咖啡与双皮奶', fruits: '水果与切盒', dessert: '甜品与蛋糕',
+        goddess: '轻养生与少女感甜品', snacks: '炸物、拼盘与小吃', hamburg: '汉堡、热狗、意面', pancake: '手抓饼、卷饼与披萨'
       },
       data: {
         categories: [
-          { id: 'recommended', name: '店长推荐' },
-          { id: 'milk-tea', name: '奶茶系列' },
-          { id: 'fruit-tea', name: '果茶系列' },
-          { id: 'milk-cover', name: '奶盖系列' },
-          { id: 'fresh-juice', name: '鲜榨系列' },
-          { id: 'coffee', name: '咖啡&双皮奶' },
-          { id: 'fruits', name: '新鲜水果' },
-          { id: 'dessert', name: '甜品系列' },
-          { id: 'goddess', name: '女神专区' },
-          { id: 'snacks', name: '小吃系列' },
-          { id: 'hamburg', name: '汉堡&意面' },
-          { id: 'pancake', name: '手抓饼系列' }
+          { id: 'recommended', name: '店长推荐' }, { id: 'milk-tea', name: '奶茶系列' }, { id: 'fruit-tea', name: '果茶系列' },
+          { id: 'milk-cover', name: '奶盖系列' }, { id: 'fresh-juice', name: '鲜榨系列' }, { id: 'coffee', name: '咖啡&双皮奶' },
+          { id: 'fruits', name: '新鲜水果' }, { id: 'dessert', name: '甜品系列' }, { id: 'goddess', name: '女神专区' },
+          { id: 'snacks', name: '小吃系列' }, { id: 'hamburg', name: '汉堡&意面' }, { id: 'pancake', name: '手抓饼系列' }
         ],
         products: [
           { id:'N01', category:'recommended', name:'珍珠奶茶', price:130, desc:'店长推荐' },
@@ -347,357 +329,144 @@
       }
     };
 
-    function peso(n) {
-      return `₱${Number(n).toFixed(0)}`;
-    }
-
+    function peso(n) { return `₱${Number(n).toFixed(0)}`; }
     function initTelegram() {
       if (!APP.telegram) return;
-      APP.telegram.ready();
-      APP.telegram.expand();
-      APP.telegram.setHeaderColor('#f8f0e7');
-      APP.telegram.setBackgroundColor('#f6efe6');
+      APP.telegram.ready(); APP.telegram.expand();
+      APP.telegram.setHeaderColor('#fff7fb'); APP.telegram.setBackgroundColor('#fff7fb');
     }
-
-    function chipBase(active) {
-      return active
-        ? 'px-4 py-2 rounded-full bg-[var(--gold)] text-white text-sm whitespace-nowrap shadow-[0_6px_16px_rgba(185,128,59,.22)]'
-        : 'px-4 py-2 rounded-full bg-white border border-[rgba(125,86,39,.10)] text-[var(--ink)] text-sm whitespace-nowrap';
+    function pickEmoji(category) {
+      return ({recommended:'✨','milk-tea':'🧋','fruit-tea':'🍋','milk-cover':'🥛','fresh-juice':'🍓',coffee:'☕',fruits:'🍍',dessert:'🍰',goddess:'🌸',snacks:'🍟',hamburg:'🍔',pancake:'🌯'})[category] || '🍽️';
     }
-
+    function chipClass(active) {
+      return active ? 'chip-active px-4 py-2 rounded-full text-sm whitespace-nowrap font-semibold' : 'px-4 py-2 rounded-full text-sm whitespace-nowrap font-semibold bg-white border border-slate-200 text-slate-700';
+    }
     function optionChip(active) {
-      return active
-        ? 'px-3 py-2 rounded-full bg-[var(--gold)] text-white text-sm'
-        : 'px-3 py-2 rounded-full bg-[#f7ecde] text-[var(--ink)] text-sm border border-[rgba(125,86,39,.08)]';
+      return active ? 'px-3 py-2 rounded-full text-sm bg-gradient-to-r from-pink-500 to-violet-600 text-white' : 'px-3 py-2 rounded-full text-sm bg-slate-100 text-slate-700';
     }
-
+    function renderBgPicker() {
+      const box = document.getElementById('bgPicker');
+      box.innerHTML = APP.backgrounds.map((bg, i) => `<button class="bg-thumb ${APP.state.activeBg===i?'active':''}" style="background:${bg.thumb}" onclick="setBackground(${i})"></button>`).join('');
+    }
+    function setBackground(index) {
+      APP.state.activeBg = index;
+      document.body.style.background = APP.backgrounds[index].value;
+      renderBgPicker();
+    }
     function renderCategories() {
-      const wrap = document.getElementById('categoryTabs');
-      wrap.innerHTML = APP.data.categories.map(cat => `
-        <button class="${chipBase(APP.state.activeCategory === cat.id)}" onclick="setCategory('${cat.id}')">${cat.name}</button>
-      `).join('');
+      document.getElementById('categoryTabs').innerHTML = APP.data.categories.map(cat => `<button class="${chipClass(APP.state.activeCategory===cat.id)}" onclick="setCategory('${cat.id}')">${cat.name}</button>`).join('');
     }
-
     function getFilteredProducts() {
       const keyword = APP.state.search.trim().toLowerCase();
-      const source = keyword
-        ? APP.data.products
-        : APP.data.products.filter(p => p.category === APP.state.activeCategory);
-      return source.filter(p => {
-        if (!keyword) return true;
-        return p.name.toLowerCase().includes(keyword) || p.id.toLowerCase().includes(keyword) || p.desc.toLowerCase().includes(keyword);
-      });
+      const source = keyword ? APP.data.products : APP.data.products.filter(p => p.category === APP.state.activeCategory);
+      return source.filter(p => !keyword || p.name.toLowerCase().includes(keyword) || p.id.toLowerCase().includes(keyword) || p.desc.toLowerCase().includes(keyword));
     }
-
     function renderProducts() {
-      const list = document.getElementById('productList');
       const products = getFilteredProducts();
       const cat = APP.data.categories.find(x => x.id === APP.state.activeCategory);
       const isSearching = APP.state.search.trim().length > 0;
       document.getElementById('currentCategoryName').textContent = isSearching ? '搜索结果' : (cat?.name || '菜单');
-      document.getElementById('currentCategoryDesc').textContent = isSearching
-        ? `关键词：${APP.state.search.trim()} · 已从全部商品中检索`
-        : (APP.categoryMeta[APP.state.activeCategory] || '请选择商品');
+      document.getElementById('currentCategoryDesc').textContent = isSearching ? `关键词：${APP.state.search.trim()} · 已从全部商品检索` : (APP.categoryMeta[APP.state.activeCategory] || '请选择商品');
       document.getElementById('resultCount').textContent = `${products.length} 款商品`;
-
-      if (!products.length) {
-        list.innerHTML = `<div class="col-span-2 soft-card rounded-[24px] p-8 text-center text-[var(--muted)]">没有找到匹配商品</div>`;
-        return;
-      }
-
-      list.innerHTML = products.map((p, index) => `
-        <button onclick="openProductModal('${p.id}')" class="menu-card text-left soft-card rounded-[24px] p-3 transition-all duration-200">
-          <div class="rounded-[20px] h-32 mb-3 p-3 text-white ${index % 5 === 0 ? 'hero-pattern' : index % 5 === 1 ? 'bg-gradient-to-br from-[#9c6a34] to-[#d3a96d]' : index % 5 === 2 ? 'bg-gradient-to-br from-[#6d4d2f] to-[#b37c47]' : index % 5 === 3 ? 'bg-gradient-to-br from-[#7b5b3a] to-[#d6b582]' : 'bg-gradient-to-br from-[#8c5e32] to-[#c89a5b]'} flex flex-col justify-between shadow-[inset_0_1px_0_rgba(255,255,255,.25)]">
-            <div class="text-[11px] tracking-[0.18em] uppercase text-white/75">${p.id}</div>
-            <div class="text-4xl leading-none self-end">${pickEmoji(p.category)}</div>
-          </div>
-          <div class="font-semibold text-sm line-clamp-2 min-h-[40px]">${p.name}</div>
-          <div class="text-xs text-[var(--muted)] mt-1 line-clamp-2 min-h-[32px]">${p.desc}</div>
+      const list = document.getElementById('productList');
+      if (!products.length) { list.innerHTML = '<div class="col-span-2 glass rounded-[24px] p-8 text-center text-slate-500">没有找到匹配商品</div>'; return; }
+      list.innerHTML = products.map(p => `
+        <button onclick="openProductModal('${p.id}')" class="glass text-left rounded-[24px] p-3 transition-transform active:scale-[0.99]">
+          <div class="product-photo rounded-[20px] h-32 flex items-center justify-center text-5xl">${pickEmoji(p.category)}</div>
+          <div class="mt-3 text-xs text-slate-400">${p.id}</div>
+          <div class="mt-1 font-bold text-sm line-clamp-2 min-h-[40px]">${p.name}</div>
+          <div class="mt-1 text-xs text-slate-500 line-clamp-2 min-h-[32px]">${p.desc}</div>
           <div class="mt-3 flex items-center justify-between">
-            <div class="text-[var(--gold-deep)] font-bold">${peso(p.price)}</div>
-            <div class="text-[11px] px-2 py-1 rounded-full bg-[#f6ecdf] text-[var(--gold-deep)]">选规格</div>
+            <div class="text-[15px] font-black text-pink-500">${peso(p.price)}</div>
+            <div class="text-xs rounded-full bg-slate-100 px-2 py-1">查看</div>
           </div>
-        </button>
-      `).join('');
+        </button>`).join('');
     }
-
-    function pickEmoji(category) {
-      const map = {
-        recommended: '✨',
-        'milk-tea': '🧋',
-        'fruit-tea': '🍋',
-        'milk-cover': '🥛',
-        'fresh-juice': '🍓',
-        coffee: '☕',
-        fruits: '🍍',
-        dessert: '🍰',
-        goddess: '🌸',
-        snacks: '🍟',
-        hamburg: '🍔',
-        pancake: '🌯'
-      };
-      return map[category] || '🍽️';
-    }
-
-    function setCategory(id) {
-      APP.state.activeCategory = id;
-      renderCategories();
-      renderProducts();
-    }
-
+    function setCategory(id) { APP.state.activeCategory = id; renderCategories(); renderProducts(); }
     function openProductModal(productId) {
       const product = APP.data.products.find(p => p.id === productId);
-      APP.state.currentProduct = product;
-      APP.state.currentQty = 1;
-      APP.state.currentSugar = '100%';
-      APP.state.currentIce = '正常冰';
-      APP.state.currentToppings = [];
-
+      APP.state.currentProduct = product; APP.state.currentQty = 1; APP.state.currentSugar = '100%'; APP.state.currentIce = '正常冰'; APP.state.currentToppings = []; APP.state.customizeOpen = false;
+      document.getElementById('modalPhoto').textContent = pickEmoji(product.category);
+      document.getElementById('modalCode').textContent = product.id;
       document.getElementById('modalName').textContent = product.name;
-      document.getElementById('modalPrice').textContent = `${product.id} · ${peso(product.price)}`;
+      document.getElementById('modalPrice').textContent = peso(product.price);
       document.getElementById('qtyValue').textContent = APP.state.currentQty;
       document.getElementById('basePriceText').textContent = peso(product.price);
-
-      renderSugarOptions();
-      renderIceOptions();
-      renderToppings();
-      updateModalPriceBreakdown();
-
+      document.getElementById('customizePanel').classList.add('hidden');
+      document.getElementById('toggleCustomizeIcon').textContent = '＋';
+      renderSugarOptions(); renderIceOptions(); renderToppings(); updateModalPriceBreakdown();
       document.getElementById('productModal').classList.remove('hidden');
     }
-
-    function closeProductModal() {
-      document.getElementById('productModal').classList.add('hidden');
-    }
-
-    function renderSugarOptions() {
-      const box = document.getElementById('sugarOptions');
-      box.innerHTML = APP.options.sugar.map(item => `
-        <button class="${optionChip(APP.state.currentSugar === item)}" onclick="selectSugar('${item}')">${item}</button>
-      `).join('');
-    }
-
-    function renderIceOptions() {
-      const box = document.getElementById('iceOptions');
-      box.innerHTML = APP.options.ice.map(item => `
-        <button class="${optionChip(APP.state.currentIce === item)}" onclick="selectIce('${item}')">${item}</button>
-      `).join('');
-    }
-
-    function renderToppings() {
-      const box = document.getElementById('toppingOptions');
-      box.innerHTML = APP.options.toppings.map(item => {
-        const active = APP.state.currentToppings.includes(item.name);
-        return `
-          <button class="${optionChip(active)}" onclick="toggleTopping('${item.name}')">${item.name} · ${peso(item.price)}</button>
-        `;
-      }).join('');
-      updateModalPriceBreakdown();
-    }
-
-    function selectSugar(v) {
-      APP.state.currentSugar = v;
-      renderSugarOptions();
-    }
-
-    function selectIce(v) {
-      APP.state.currentIce = v;
-      renderIceOptions();
-    }
-
-    function toggleTopping(name) {
-      const idx = APP.state.currentToppings.indexOf(name);
-      if (idx >= 0) APP.state.currentToppings.splice(idx, 1);
-      else APP.state.currentToppings.push(name);
-      renderToppings();
-    }
-
-    function getToppingPrice(names) {
-      return names.reduce((sum, name) => {
-        const t = APP.options.toppings.find(x => x.name === name);
-        return sum + (t ? t.price : 0);
-      }, 0);
-    }
-
+    function closeProductModal() { document.getElementById('productModal').classList.add('hidden'); }
+    function renderSugarOptions() { document.getElementById('sugarOptions').innerHTML = APP.options.sugar.map(item => `<button class="${optionChip(APP.state.currentSugar===item)}" onclick="selectSugar('${item}')">${item}</button>`).join(''); }
+    function renderIceOptions() { document.getElementById('iceOptions').innerHTML = APP.options.ice.map(item => `<button class="${optionChip(APP.state.currentIce===item)}" onclick="selectIce('${item}')">${item}</button>`).join(''); }
+    function renderToppings() { document.getElementById('toppingOptions').innerHTML = APP.options.toppings.map(item => `<button class="${optionChip(APP.state.currentToppings.includes(item.name))}" onclick="toggleTopping('${item.name}')">${item.name} · ${peso(item.price)}</button>`).join(''); updateModalPriceBreakdown(); }
+    function selectSugar(v) { APP.state.currentSugar = v; renderSugarOptions(); }
+    function selectIce(v) { APP.state.currentIce = v; renderIceOptions(); }
+    function toggleTopping(name) { const idx = APP.state.currentToppings.indexOf(name); if (idx >= 0) APP.state.currentToppings.splice(idx,1); else APP.state.currentToppings.push(name); renderToppings(); }
+    function getToppingPrice(names) { return names.reduce((sum, name) => { const t = APP.options.toppings.find(x => x.name === name); return sum + (t ? t.price : 0); }, 0); }
     function updateModalPriceBreakdown() {
-      const product = APP.state.currentProduct;
-      if (!product) return;
-      const toppingPrice = getToppingPrice(APP.state.currentToppings);
-      const unitPrice = product.price + toppingPrice;
+      const product = APP.state.currentProduct; if (!product) return;
+      const toppingPrice = getToppingPrice(APP.state.currentToppings); const unitPrice = product.price + toppingPrice;
       document.getElementById('basePriceText').textContent = peso(product.price);
       document.getElementById('toppingPriceText').textContent = peso(toppingPrice);
-      document.getElementById('currentUnitPriceText').textContent = peso(unitPrice);
-      document.getElementById('addToCartBtn').textContent = `加入购物袋 · ${peso(unitPrice * APP.state.currentQty)}`;
+      document.getElementById('addToCartBtn').textContent = `加入购物车 · ${peso(unitPrice * APP.state.currentQty)}`;
     }
-
+    function toggleCustomizePanel() {
+      APP.state.customizeOpen = !APP.state.customizeOpen;
+      document.getElementById('customizePanel').classList.toggle('hidden', !APP.state.customizeOpen);
+      document.getElementById('toggleCustomizeIcon').textContent = APP.state.customizeOpen ? '－' : '＋';
+    }
     function addCurrentToCart() {
-      const p = APP.state.currentProduct;
-      if (!p) return;
-      APP.state.cart.push({
-        id: `cart_${Date.now()}`,
-        productId: p.id,
-        name: p.name,
-        basePrice: p.price,
-        sugar: APP.state.currentSugar,
-        ice: APP.state.currentIce,
-        toppings: [...APP.state.currentToppings],
-        qty: APP.state.currentQty
-      });
-      renderCartBadge();
-      closeProductModal();
+      const p = APP.state.currentProduct; if (!p) return;
+      APP.state.cart.push({ id:`cart_${Date.now()}`, productId:p.id, name:p.name, basePrice:p.price, sugar:APP.state.currentSugar, ice:APP.state.currentIce, toppings:[...APP.state.currentToppings], qty:APP.state.currentQty });
+      renderCartBadge(); closeProductModal();
     }
-
     function renderCartBadge() {
-      const totalQty = APP.state.cart.reduce((sum, item) => sum + item.qty, 0);
-      const total = getCartTotal();
-      document.getElementById('cartCount').textContent = totalQty;
-      document.getElementById('floatingCartCount').textContent = totalQty;
-      document.getElementById('floatingCartTotal').textContent = peso(total);
+      const totalQty = APP.state.cart.reduce((sum, item) => sum + item.qty, 0), total = getCartTotal();
+      document.getElementById('cartCount').textContent = totalQty; document.getElementById('floatingCartCount').textContent = totalQty; document.getElementById('floatingCartTotal').textContent = peso(total);
     }
-
-    function openCart() {
-      renderCart();
-      document.getElementById('cartDrawer').classList.remove('hidden');
-    }
-
-    function closeCart() {
-      document.getElementById('cartDrawer').classList.add('hidden');
-    }
-
-    function getItemUnitPrice(item) {
-      return item.basePrice + getToppingPrice(item.toppings);
-    }
-
-    function getCartTotal() {
-      return APP.state.cart.reduce((sum, item) => sum + getItemUnitPrice(item) * item.qty, 0);
-    }
-
+    function openCart() { renderCart(); document.getElementById('cartDrawer').classList.remove('hidden'); }
+    function closeCart() { document.getElementById('cartDrawer').classList.add('hidden'); }
+    function getItemUnitPrice(item) { return item.basePrice + getToppingPrice(item.toppings); }
+    function getCartTotal() { return APP.state.cart.reduce((sum, item) => sum + getItemUnitPrice(item) * item.qty, 0); }
     function renderCart() {
       const box = document.getElementById('cartItems');
-      if (!APP.state.cart.length) {
-        box.innerHTML = '<div class="soft-card rounded-[24px] p-8 text-sm text-[var(--muted)] text-center">购物袋还是空的，先挑一杯喜欢的吧。</div>';
-      } else {
-        box.innerHTML = APP.state.cart.map(item => `
-          <div class="soft-card rounded-[24px] p-3">
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex-1">
-                <div class="font-semibold">${item.name}</div>
-                <div class="text-xs text-[var(--muted)] mt-1">甜度 ${item.sugar} · 冰度 ${item.ice}</div>
-                <div class="text-xs text-[var(--muted)] mt-1">加料：${item.toppings.length ? item.toppings.join('、') : '无'}</div>
-                <div class="text-sm text-[var(--gold-deep)] font-semibold mt-2">${peso(getItemUnitPrice(item))}</div>
-              </div>
-              <div class="flex items-center gap-2">
-                <button class="w-8 h-8 rounded-full bg-[#f5eadc]" onclick="changeCartQty('${item.id}', -1)">-</button>
-                <span class="w-5 text-center">${item.qty}</span>
-                <button class="w-8 h-8 rounded-full bg-[#f5eadc]" onclick="changeCartQty('${item.id}', 1)">+</button>
-              </div>
-            </div>
-          </div>
-        `).join('');
+      if (!APP.state.cart.length) { box.innerHTML = '<div class="glass rounded-[24px] p-8 text-sm text-slate-500 text-center">购物车还是空的</div>'; }
+      else {
+        box.innerHTML = APP.state.cart.map(item => `<div class="glass rounded-[24px] p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1"><div class="font-semibold">${item.name}</div><div class="text-xs text-slate-500 mt-1">甜度 ${item.sugar} · 冰度 ${item.ice}</div><div class="text-xs text-slate-500 mt-1">小料：${item.toppings.length ? item.toppings.join('、') : '无'}</div><div class="text-sm text-pink-500 font-bold mt-2">${peso(getItemUnitPrice(item))}</div></div><div class="flex items-center gap-2"><button class="w-8 h-8 rounded-full bg-slate-100" onclick="changeCartQty('${item.id}', -1)">-</button><span class="w-5 text-center">${item.qty}</span><button class="w-8 h-8 rounded-full bg-slate-100" onclick="changeCartQty('${item.id}', 1)">+</button></div></div></div>`).join('');
       }
       document.getElementById('cartTotal').textContent = peso(getCartTotal());
     }
-
-    function changeCartQty(id, delta) {
-      const item = APP.state.cart.find(x => x.id === id);
-      if (!item) return;
-      item.qty += delta;
-      if (item.qty <= 0) APP.state.cart = APP.state.cart.filter(x => x.id !== id);
-      renderCart();
-      renderCartBadge();
-    }
-
-    function openCheckout() {
-      if (!APP.state.cart.length) return alert('请先添加商品');
-      closeCart();
-      renderCheckoutSummary();
-      document.getElementById('checkoutDrawer').classList.remove('hidden');
-    }
-
-    function closeCheckout() {
-      document.getElementById('checkoutDrawer').classList.add('hidden');
-    }
-
+    function changeCartQty(id, delta) { const item = APP.state.cart.find(x => x.id === id); if (!item) return; item.qty += delta; if (item.qty <= 0) APP.state.cart = APP.state.cart.filter(x => x.id !== id); renderCart(); renderCartBadge(); }
+    function openCheckout() { if (!APP.state.cart.length) return alert('请先添加商品'); closeCart(); renderCheckoutSummary(); document.getElementById('checkoutDrawer').classList.remove('hidden'); }
+    function closeCheckout() { document.getElementById('checkoutDrawer').classList.add('hidden'); }
     function renderCheckoutSummary() {
       const box = document.getElementById('checkoutSummary');
-      box.innerHTML = APP.state.cart.map(item => `
-        <div class="flex items-start justify-between gap-3 border-b border-[rgba(125,86,39,.08)] pb-2">
-          <div>
-            <div>${item.name} × ${item.qty}</div>
-            <div class="text-[var(--muted)] text-xs">${item.sugar} / ${item.ice}${item.toppings.length ? ' / ' + item.toppings.join('、') : ''}</div>
-          </div>
-          <div class="font-medium">${peso(getItemUnitPrice(item) * item.qty)}</div>
-        </div>
-      `).join('') + `
-        <div class="pt-2 flex items-center justify-between font-semibold">
-          <span>合计</span>
-          <span>${peso(getCartTotal())}</span>
-        </div>
-      `;
+      box.innerHTML = APP.state.cart.map(item => `<div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-2"><div><div>${item.name} × ${item.qty}</div><div class="text-slate-500 text-xs">${item.sugar} / ${item.ice}${item.toppings.length ? ' / ' + item.toppings.join('、') : ''}</div></div><div class="font-medium">${peso(getItemUnitPrice(item) * item.qty)}</div></div>`).join('') + `<div class="pt-2 flex items-center justify-between font-bold"><span>合计</span><span>${peso(getCartTotal())}</span></div>`;
     }
-
     function buildOrderPayload() {
-      return {
-        orderNo: `TT${Date.now()}`,
-        customer: {
-          name: document.getElementById('customerName').value.trim(),
-          phone: document.getElementById('customerPhone').value.trim(),
-          address: document.getElementById('customerAddress').value.trim(),
-          note: document.getElementById('customerNote').value.trim()
-        },
-        items: APP.state.cart.map(item => ({
-          productId: item.productId,
-          name: item.name,
-          qty: item.qty,
-          sugar: item.sugar,
-          ice: item.ice,
-          toppings: item.toppings,
-          unitPrice: getItemUnitPrice(item),
-          subtotal: getItemUnitPrice(item) * item.qty
-        })),
-        totalAmount: getCartTotal(),
-        createdAt: new Date().toISOString()
-      };
+      return { orderNo:`TT${Date.now()}`, customer:{ name:document.getElementById('customerName').value.trim(), phone:document.getElementById('customerPhone').value.trim(), address:document.getElementById('customerAddress').value.trim(), note:document.getElementById('customerNote').value.trim() }, items:APP.state.cart.map(item => ({ productId:item.productId, name:item.name, qty:item.qty, sugar:item.sugar, ice:item.ice, toppings:item.toppings, unitPrice:getItemUnitPrice(item), subtotal:getItemUnitPrice(item)*item.qty })), totalAmount:getCartTotal(), createdAt:new Date().toISOString() };
     }
-
     function submitOrder() {
       const payload = buildOrderPayload();
       if (!payload.customer.name) return alert('请填写联系人姓名');
       if (!payload.customer.phone) return alert('请填写联系电话');
       if (!payload.customer.address) return alert('请填写收货地址');
-      console.log('DAY1_ORDER_PAYLOAD', payload);
-      alert(`演示版下单成功
-订单号：${payload.orderNo}`);
-      APP.state.cart = [];
-      renderCartBadge();
-      closeCheckout();
+      console.log('DAY1_ORDER_PAYLOAD', payload); alert(`演示版下单成功
+订单号：${payload.orderNo}`); APP.state.cart = []; renderCartBadge(); closeCheckout();
     }
 
-    document.getElementById('qtyMinus').addEventListener('click', () => {
-      APP.state.currentQty = Math.max(1, APP.state.currentQty - 1);
-      document.getElementById('qtyValue').textContent = APP.state.currentQty;
-      updateModalPriceBreakdown();
-    });
-
-    document.getElementById('qtyPlus').addEventListener('click', () => {
-      APP.state.currentQty += 1;
-      document.getElementById('qtyValue').textContent = APP.state.currentQty;
-      updateModalPriceBreakdown();
-    });
-
+    document.getElementById('qtyMinus').addEventListener('click', () => { APP.state.currentQty = Math.max(1, APP.state.currentQty - 1); document.getElementById('qtyValue').textContent = APP.state.currentQty; updateModalPriceBreakdown(); });
+    document.getElementById('qtyPlus').addEventListener('click', () => { APP.state.currentQty += 1; document.getElementById('qtyValue').textContent = APP.state.currentQty; updateModalPriceBreakdown(); });
     document.getElementById('addToCartBtn').addEventListener('click', addCurrentToCart);
     document.getElementById('cartBtn').addEventListener('click', openCart);
     document.getElementById('goCheckoutBtn').addEventListener('click', openCheckout);
     document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-      APP.state.search = e.target.value;
-      renderProducts();
-    });
+    document.getElementById('searchInput').addEventListener('input', e => { APP.state.search = e.target.value; renderProducts(); });
+    document.getElementById('toggleCustomizeBtn').addEventListener('click', toggleCustomizePanel);
 
-    initTelegram();
-    renderCategories();
-    renderProducts();
-    renderCartBadge();
+    initTelegram(); renderBgPicker(); setBackground(0); renderCategories(); renderProducts(); renderCartBadge();
   </script>
 </body>
 </html>
