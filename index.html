@@ -380,16 +380,24 @@
 
     function getFilteredProducts() {
       const keyword = APP.state.search.trim().toLowerCase();
-      return APP.data.products.filter(p => p.category === APP.state.activeCategory)
-        .filter(p => !keyword || p.name.toLowerCase().includes(keyword) || p.id.toLowerCase().includes(keyword));
+      const source = keyword
+        ? APP.data.products
+        : APP.data.products.filter(p => p.category === APP.state.activeCategory);
+      return source.filter(p => {
+        if (!keyword) return true;
+        return p.name.toLowerCase().includes(keyword) || p.id.toLowerCase().includes(keyword) || p.desc.toLowerCase().includes(keyword);
+      });
     }
 
     function renderProducts() {
       const list = document.getElementById('productList');
       const products = getFilteredProducts();
       const cat = APP.data.categories.find(x => x.id === APP.state.activeCategory);
-      document.getElementById('currentCategoryName').textContent = cat?.name || '菜单';
-      document.getElementById('currentCategoryDesc').textContent = APP.categoryMeta[APP.state.activeCategory] || '请选择商品';
+      const isSearching = APP.state.search.trim().length > 0;
+      document.getElementById('currentCategoryName').textContent = isSearching ? '搜索结果' : (cat?.name || '菜单');
+      document.getElementById('currentCategoryDesc').textContent = isSearching
+        ? `关键词：${APP.state.search.trim()} · 已从全部商品中检索`
+        : (APP.categoryMeta[APP.state.activeCategory] || '请选择商品');
       document.getElementById('resultCount').textContent = `${products.length} 款商品`;
 
       if (!products.length) {
@@ -658,7 +666,8 @@
       if (!payload.customer.phone) return alert('请填写联系电话');
       if (!payload.customer.address) return alert('请填写收货地址');
       console.log('DAY1_ORDER_PAYLOAD', payload);
-      alert(`演示版下单成功\n订单号：${payload.orderNo}`);
+      alert(`演示版下单成功
+订单号：${payload.orderNo}`);
       APP.state.cart = [];
       renderCartBadge();
       closeCheckout();
