@@ -50,6 +50,20 @@
       </div>
 
       <div class="mt-4 space-y-4">
+        <div class="p-3 rounded-2xl bg-slate-50 space-y-1 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">商品价格</span>
+            <span id="basePriceText" class="font-medium"></span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">加料价格</span>
+            <span id="toppingPriceText" class="font-medium">₱0</span>
+          </div>
+          <div class="flex items-center justify-between text-base font-semibold pt-1 border-t border-slate-200">
+            <span>当前单价</span>
+            <span id="currentUnitPriceText"></span>
+          </div>
+        </div>
         <div>
           <div class="text-sm font-semibold mb-2">甜度</div>
           <div id="sugarOptions" class="flex flex-wrap gap-2"></div>
@@ -152,80 +166,19 @@
           { id: 'snacks', name: '小吃系列' }
         ],
         products: [
-
-/* ================= 汉堡&意面 ================= */
-{ id:'B01', category:'hamburg', name:'经典培根芝士热狗', price:220, desc:'汉堡意面' },
-{ id:'B02', category:'hamburg', name:'奥尔良鸡肉热狗', price:240, desc:'汉堡意面' },
-{ id:'B03', category:'hamburg', name:'肉松海苔培根热狗', price:240, desc:'汉堡意面' },
-{ id:'B04', category:'hamburg', name:'凤梨牛肉汉堡', price:240, desc:'汉堡意面' },
-{ id:'B05', category:'hamburg', name:'黑椒鸡扒汉堡', price:240, desc:'汉堡意面' },
-{ id:'B11', category:'hamburg', name:'黑椒牛柳意面', price:520, desc:'汉堡意面' },
-{ id:'B12', category:'hamburg', name:'番茄海鲜意面', price:520, desc:'汉堡意面' },
-{ id:'B13', category:'hamburg', name:'黑椒鸡扒意面', price:550, desc:'汉堡意面' },
-{ id:'B14', category:'hamburg', name:'炸鸡煎蛋火鸡面', price:380, desc:'汉堡意面' },
-{ id:'B15', category:'hamburg', name:'韩式麻酱火鸡面', price:380, desc:'汉堡意面' },
-{ id:'B16', category:'hamburg', name:'酸豆角鸡蛋炒面', price:320, desc:'汉堡意面' },
-{ id:'B17', category:'hamburg', name:'酸豆角鸡蛋炒饭', price:340, desc:'汉堡意面' },
-{ id:'B18', category:'hamburg', name:'酸豆角炒河粉', price:360, desc:'汉堡意面' },
-
-/* ================= 手抓饼 ================= */
-{ id:'P01', category:'pancake', name:'手抓饼', price:160, desc:'手抓饼系列' },
-{ id:'P02', category:'pancake', name:'手抓饼+鸡柳', price:200, desc:'手抓饼系列' },
-{ id:'P03', category:'pancake', name:'手抓饼+烤肠', price:220, desc:'手抓饼系列' },
-{ id:'P04', category:'pancake', name:'手抓饼+鸡柳+骨肉相连', price:260, desc:'手抓饼系列' },
-{ id:'P05', category:'pancake', name:'手抓饼+鸡腿排', price:260, desc:'手抓饼系列' },
-{ id:'P06', category:'pancake', name:'奥尔良腿排堡', price:200, desc:'手抓饼系列' },
-{ id:'P07', category:'pancake', name:'滑蛋火腿三明治', price:220, desc:'手抓饼系列' },
-{ id:'P08', category:'pancake', name:'香辣鸡腿堡', price:220, desc:'手抓饼系列' },
-{ id:'P10', category:'pancake', name:'经典鸡肉卷', price:200, desc:'手抓饼系列' },
-{ id:'P11', category:'pancake', name:'火鸡面磅肠卷饼', price:220, desc:'手抓饼系列' },
-{ id:'P12', category:'pancake', name:'火鸡面鸡柳卷饼', price:220, desc:'手抓饼系列' },
-{ id:'P13', category:'pancake', name:'火鸡面鸡腿排卷饼', price:240, desc:'手抓饼系列' },
-{ id:'P14', category:'pancake', name:'黄金蛋炒饭', price:280, desc:'手抓饼系列' },
-{ id:'P15', category:'pancake', name:'老干妈鸡蛋火腿蛋炒饭', price:320, desc:'手抓饼系列' },
-{ id:'P16', category:'pancake', name:'虾仁时蔬蛋炒饭', price:360, desc:'手抓饼系列' },
-{ id:'P17', category:'pancake', name:'凉拌鲜河粉', price:280, desc:'手抓饼系列' },
-{ id:'P18', category:'pancake', name:'淀粉肠鸡蛋手抓饼', price:280, desc:'手抓饼系列' },
-{ id:'P20', category:'pancake', name:'香蕉芝士披萨（8英寸）', price:680, desc:'手抓饼系列' },
-{ id:'P21', category:'pancake', name:'夏威夷风情披萨（8英寸）', price:780, desc:'手抓饼系列' },
-{ id:'P22', category:'pancake', name:'奥尔良烤肉虾仁披萨（8英寸）', price:780, desc:'手抓饼系列' },
-{ id:'P23', category:'pancake', name:'榴莲芝士披萨（8英寸）', price:780, desc:'手抓饼系列' },
-
-/* ================= 甜品（节选开头）================= */
-{ id:'D01', category:'dessert', name:'红糖冰粉', price:220, desc:'甜品系列' },
-{ id:'D02', category:'dessert', name:'芋圆烧仙草', price:260, desc:'甜品系列' },
-{ id:'D03', category:'dessert', name:'酸奶水果捞', price:340, desc:'甜品系列' },
-{ id:'D04', category:'dessert', name:'水果红糖冰粉', price:300, desc:'甜品系列' },
-{ id:'D05', category:'dessert', name:'水果拼盘', price:350, desc:'甜品系列' },
-
-/* ================= 小吃 ================= */
-{ id:'S01', category:'snacks', name:'奥尔良鸡翅', price:120, desc:'小吃系列' },
-{ id:'S02', category:'snacks', name:'香酥鸡排', price:140, desc:'小吃系列' },
-{ id:'S03', category:'snacks', name:'香辣鸡翅根', price:150, desc:'小吃系列' },
-{ id:'S04', category:'snacks', name:'台湾烤肠', price:60, desc:'小吃系列' },
-{ id:'S05', category:'snacks', name:'飘香鸡柳', price:60, desc:'小吃系列' },
-
-/* ================= 奶茶 ================= */
-{ id:'N01', category:'recommended', name:'珍珠奶茶', price:130, desc:'推荐' },
-{ id:'N02', category:'recommended', name:'椰果奶茶', price:130, desc:'推荐' },
-{ id:'N03', category:'recommended', name:'芋圆奶茶', price:150, desc:'推荐' },
-{ id:'N04', category:'milk-tea', name:'血糯米奶茶', price:150, desc:'奶茶' },
-{ id:'N05', category:'milk-tea', name:'燕麦奶茶', price:150, desc:'奶茶' },
-
-/* ================= 果茶 ================= */
-{ id:'F01', category:'fruit-tea', name:'新鲜椰汁', price:130, desc:'果茶' },
-{ id:'F02', category:'fruit-tea', name:'柠檬红茶', price:130, desc:'果茶' },
-{ id:'F03', category:'fruit-tea', name:'柠檬绿茶', price:130, desc:'果茶' },
-{ id:'F04', category:'fruit-tea', name:'金桔柠檬', price:150, desc:'果茶' },
-{ id:'F05', category:'fruit-tea', name:'满杯百香果', price:150, desc:'果茶' },
-
-/* ================= 奶盖 ================= */
-{ id:'M01', category:'milk-cover', name:'芝士奶盖', price:150, desc:'奶盖' },
-{ id:'M02', category:'milk-cover', name:'红茶奶盖', price:150, desc:'奶盖' },
-{ id:'M03', category:'milk-cover', name:'绿茶奶盖', price:150, desc:'奶盖' },
-{ id:'M04', category:'milk-cover', name:'草莓奶盖', price:150, desc:'奶盖' },
-
-]
+          { id: 'N01', category: 'recommended', name: '珍珠奶茶', price: 130, desc: '经典奶茶，带珍珠' },
+          { id: 'N10', category: 'recommended', name: '奶茶三兄弟', price: 150, desc: '珍珠+布丁+仙草' },
+          { id: 'N23', category: 'recommended', name: '芋泥啵啵奶茶', price: 180, desc: '浓郁芋泥口感' },
+          { id: 'N22', category: 'milk-tea', name: '原味奶茶', price: 110, desc: '基础经典款' },
+          { id: 'N02', category: 'milk-tea', name: '椰果奶茶', price: 130, desc: '椰果口感清爽' },
+          { id: 'N14', category: 'milk-tea', name: '香芋奶茶', price: 150, desc: '香芋风味浓郁' },
+          { id: 'F04', category: 'fruit-tea', name: '金桔柠檬', price: 150, desc: '酸甜清爽' },
+          { id: 'F05', category: 'fruit-tea', name: '满杯百香果', price: 150, desc: '百香果爆香' },
+          { id: 'F09', category: 'fruit-tea', name: '杨枝甘露', price: 200, desc: '芒果系招牌' },
+          { id: 'S01', category: 'snacks', name: '奥尔良鸡翅', price: 120, desc: '小吃热卖款' },
+          { id: 'S08', category: 'snacks', name: '风味薯条', price: 120, desc: '外酥里软' },
+          { id: 'S27', category: 'snacks', name: '爆浆鸡排', price: 220, desc: '大份满足' }
+        ]
       }
     };
 
@@ -290,6 +243,7 @@
       document.getElementById('modalName').textContent = product.name;
       document.getElementById('modalPrice').textContent = peso(product.price);
       document.getElementById('qtyValue').textContent = APP.state.currentQty;
+      document.getElementById('basePriceText').textContent = peso(product.price);
 
       renderSugarOptions();
       renderIceOptions();
@@ -321,9 +275,13 @@
       box.innerHTML = APP.options.toppings.map(item => {
         const active = APP.state.currentToppings.includes(item.name);
         return `
-          <button class="${chipClass(active)}" onclick="toggleTopping('${item.name}')">${item.name} +${item.price}</button>
+          <button class="${chipClass(active)}" onclick="toggleTopping('${item.name}')">
+            <span>${item.name}</span>
+            <span class="ml-1 text-xs opacity-80">${peso(item.price)}</span>
+          </button>
         `;
       }).join('');
+      updateModalPriceBreakdown();
     }
 
     function selectSugar(v) {
@@ -348,6 +306,17 @@
         const t = APP.options.toppings.find(x => x.name === name);
         return sum + (t ? t.price : 0);
       }, 0);
+    }
+
+    function updateModalPriceBreakdown() {
+      const product = APP.state.currentProduct;
+      if (!product) return;
+      const toppingPrice = getToppingPrice(APP.state.currentToppings);
+      const unitPrice = product.price + toppingPrice;
+      document.getElementById('basePriceText').textContent = peso(product.price);
+      document.getElementById('toppingPriceText').textContent = peso(toppingPrice);
+      document.getElementById('currentUnitPriceText').textContent = peso(unitPrice);
+      document.getElementById('addToCartBtn').textContent = `加入购物车 · ${peso(unitPrice * APP.state.currentQty)}`;
     }
 
     function addCurrentToCart() {
@@ -500,11 +469,13 @@
     document.getElementById('qtyMinus').addEventListener('click', () => {
       APP.state.currentQty = Math.max(1, APP.state.currentQty - 1);
       document.getElementById('qtyValue').textContent = APP.state.currentQty;
+      updateModalPriceBreakdown();
     });
 
     document.getElementById('qtyPlus').addEventListener('click', () => {
       APP.state.currentQty += 1;
       document.getElementById('qtyValue').textContent = APP.state.currentQty;
+      updateModalPriceBreakdown();
     });
 
     document.getElementById('addToCartBtn').addEventListener('click', addCurrentToCart);
