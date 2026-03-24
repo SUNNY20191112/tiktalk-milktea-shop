@@ -1,2248 +1,521 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>茶语奶茶 - 马尼拉店</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <style>
-        /* 1. 隐藏滚动条 */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-
-        /* 2. 底部导航栏选中状态 */
-        .active-tab { 
-            color: #f59e0b; 
-            border-top: 2px solid #f59e0b; 
-            font-weight: bold; 
-        }
-
-        /* 3. 优化左侧分类按钮（默认状态） */
-        .cat-btn {
-            transition: all 0.2s;
-            border-left: 4px solid transparent;
-            color: #666;
-            background-color: #f3f4f6; /* 浅灰色背景，让它跟右侧区分开 */
-        }
-
-        /* 4. 分类按钮选中状态（增强版） */
-        .category-active {
-            background-color: #ffffff !important; /* 选中的时候变白，显得更有立体感 */
-            color: #f59e0b !important;
-            border-left: 4px solid #f59e0b !important;
-            font-weight: 900 !important;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-        }
-        /* 弹窗按钮样式 */
-        .spec-btn {
-            padding: 6px 16px;
-            border-radius: 8px;
-            background: #f3f4f6;
-            font-size: 12px;
-            color: #666;
-            border: 1px solid transparent;
-        }
-        .spec-btn.active {
-            background: #fffbeb;
-            color: #f59e0b;
-            border-color: #f59e0b;
-            font-weight: bold;
-        }
-        /* 弹出动画 */
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-        .animate-slide-up { animation: slideUp 0.3s ease-out; }
-        /* 1. 全局字体放大一点，适合触屏 */
-body {
-    font-size: 16px;
-    -webkit-tap-highlight-color: transparent; /* 去除点击时的蓝色框 */
-}
-
-/* 2. 给底部菜单留出“安全区” */
-/* 现在的手机底部都有横条，我们需要增加底部内边距 */
-.pb-safe {
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-}
-
-/* 3. 增强按钮的点击反馈 */
-button:active {
-    transform: scale(0.96);
-    transition: transform 0.1s;
-}
-
-/* 4. 图片自适应，防止挤压 */
-img {
-    max-width: 100%;
-    height: auto;
-}
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>TikTalk Milktea 茶语奶茶</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #f8f5ef; }
+    .safe-bottom { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
 </head>
-<body class="bg-gray-50 flex flex-col h-screen overflow-hidden text-gray-800">
-
-   <header class="bg-white px-6 py-3 shadow-sm shrink-0 flex items-center relative h-16">
-    <div class="flex items-center">
-        <div class="w-9 h-9 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-serif italic text-lg shadow-md border-2 border-white">
-            茶
+<body class="text-slate-800">
+  <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-sm safe-bottom">
+    <header class="sticky top-0 z-20 bg-amber-50 border-b border-amber-100 px-4 py-3">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h1 class="text-lg font-bold">TikTalk Milktea 茶语奶茶</h1>
+          <p class="text-xs text-slate-500">Telegram Mini App MVP · Day 1</p>
         </div>
-    </div>
-
-    <div class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
-        <h1 class="text-[22px] leading-none font-black text-gray-900 tracking-[0.22em] uppercase"
-    style="font-family:'PingFang SC', sans-serif;">
-  茶语奶茶
-</h1>
-<p class="text-[10px] text-gray-400 tracking-[0.25em] mt-1">MANILA • SINCE 2018</p>
-    </div>
-
-    <div class="ml-auto flex items-center gap-2">
-    <div class="flex items-center bg-gray-100 rounded-full p-1">
-        <button id="lang-btn-zh" onclick="switchLang('zh')" class="px-2 py-1 text-[10px] rounded-full bg-white font-bold shadow-sm">中</button>
-        <button id="lang-btn-en" onclick="switchLang('en')" class="px-2 py-1 text-[10px] rounded-full text-gray-500">EN</button>
-    </div>
-
-    <button id="pickup-btn"
-        onclick="switchTab('pickup')"
-        class="text-orange-500 border border-orange-200 px-3 py-1 rounded-full text-xs font-bold hover:bg-orange-50 transition-colors">
-        取单号
-    </button>
-</div>
-</header>
-
-    <main id="main-content" class="flex-1 overflow-hidden relative">
-        <section id="page-home" class="p-4 overflow-y-auto h-full bg-gray-50">
-            <div class="mb-6 overflow-hidden rounded-2xl shadow-lg relative h-44 bg-orange-100">
-                <img src="https://images.unsplash.com/photo-1544787210-282bb2bb097c?auto=format&fit=crop&q=80&w=1000" class="w-full h-full object-cover" alt="品牌海报"onerror="this.onerror=null; this.src='https://picsum.photos/1000/400';"
-  class="w-full h-full object-cover"
-  alt="品牌海报">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-                    <div>
-                        <p class="text-white font-bold text-lg leading-tight">茶语 · 寻找一杯好茶</p>
-                        <p class="text-[10px] text-gray-400 tracking-[0.25em] mt-1">MANILA • SINCE 2018</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-gray-100">
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="w-3 h-5 bg-orange-500 rounded-full"></div>
-                    <h2 class="text-[16px] font-extrabold text-gray-900 tracking-wide">关于茶语</h2>
-                </div>
-                <p class="text-[13px] leading-relaxed text-gray-600">
-                    "立足马尼拉8年，我们坚持使用优质茶底与新鲜水果。茶语，不仅是一杯奶茶，更是对生活的一种态度。"
-                </p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
-                    <div class="text-xl bg-orange-50 w-10 h-10 flex items-center justify-center rounded-lg">🕒</div>
-                    <div>
-                        <p class="text-[11px] text-gray-400">营业时间</p>
-                        <p class="text-[14px] font-bold text-gray-800">09:00-22:30</p>
-                    </div>
-                </div>
-                <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
-                    <div class="text-xl bg-blue-50 w-10 h-10 flex items-center justify-center rounded-lg">🚚</div>
-                    <div>
-                        <p class="text-[10px] text-gray-400">配送范围</p>
-                        <p class="text-xs font-bold text-gray-700">马尼拉全城</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-center py-4">
-                <p class="text-[10px] text-gray-300">—— 匠心制作 每一杯都是新鲜 ——</p>
-            </div>
-        </section>
-
-        <section id="page-order" class="hidden flex h-full">
-            <aside class="w-24 bg-gray-100 h-full overflow-y-auto no-scrollbar shrink-0">
-                <nav id="category-list"></nav>
-            </aside>
-            <div class="flex-1 h-full overflow-y-auto p-4 pb-24" id="product-container" style="scroll-behavior: smooth;"></div>
-        </section>
-
-        <section id="page-pickup" class="hidden p-4 h-full overflow-y-auto bg-gray-50">
-  <div class="flex items-center justify-between mb-4">
-    <h2 class="text-lg font-bold">🔔 取单进度</h2>
-    <button onclick="clearOrders()" class="text-xs text-gray-400 underline">清空</button>
-  </div>
-
-  <div id="pickup-list" class="space-y-3"></div>
-
-  <div id="pickup-empty" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-orange-100 text-center">
-    <p class="text-gray-400 mb-2">当前暂无可取的订单</p>
-    <button onclick="switchTab('order')" class="text-orange-500 font-bold">去喝一杯 ➔</button>
-  </div>
-</section>
-
-       <section id="page-me" class="hidden h-full overflow-y-auto bg-gray-50">
-  <div class="bg-orange-500 p-8 text-white rounded-b-[40px] shadow-lg">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl">👤</div>
-      <div>
-        <h2 class="text-xl font-bold">茶语老友</h2>
-        <p class="text-sm opacity-80">马尼拉会员</p>
+        <button id="cartBtn" class="relative px-3 py-2 rounded-full bg-amber-500 text-white text-sm font-semibold">
+          购物车
+          <span id="cartCount" class="ml-1">0</span>
+        </button>
       </div>
-    </div>
+      <div id="categoryTabs" class="flex gap-2 overflow-x-auto pt-3 no-scrollbar"></div>
+    </header>
 
-    <div class="grid grid-cols-3 gap-2 text-center bg-white/20 p-4 rounded-xl">
-      <div><p class="font-bold">0</p><p class="text-xs opacity-80">积分</p></div>
-      <div><p class="font-bold">2</p><p class="text-xs opacity-80">优惠券</p></div>
-      <div><p class="font-bold">₱0</p><p class="text-xs opacity-80">余额</p></div>
-    </div>
-  </div>
-
-  <div class="p-4 space-y-3 mt-4">
-    <div id="me-address" class="bg-white p-4 rounded-xl flex justify-between items-center shadow-sm cursor-pointer">
-      <div>
-        <div class="font-semibold">📍 我的收货地址</div>
-        <div id="me-address-summary" class="text-xs text-gray-400 mt-1">未填写</div>
-      </div>
-      <span class="text-gray-400">➔</span>
-    </div>
-
-    <div id="me-support" class="bg-white p-4 rounded-xl flex justify-between items-center shadow-sm cursor-pointer">
-      <span>📞 联系客服</span>
-      <span class="text-gray-400">➔</span>
-    </div>
-
-    <div id="me-settings" class="bg-white p-4 rounded-xl flex justify-between items-center shadow-sm cursor-pointer">
-      <span>⚙️ 个人设置</span>
-      <span class="text-gray-400">➔</span>
-    </div>
-  </div>
-</section>
-
-        <section id="page-cart" class="hidden p-4 h-full overflow-y-auto">
-            <h2 class="text-lg font-bold mb-4 border-b pb-2">我的清单</h2>
-            <div id="cart-items-list" class="space-y-4"></div>
-        </section>
+    <main>
+      <section id="productList" class="p-4 grid grid-cols-2 gap-3"></section>
     </main>
-
-    <div id="cart-preview" class="hidden fixed bottom-20 left-4 right-4 bg-gray-900 text-white p-4 rounded-full flex justify-between items-center shadow-2xl z-50">
-        <div class="flex items-center gap-4">
-            <div class="relative">
-                <span>🛒</span>
-                <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-[10px] rounded-full w-4 h-4 flex items-center justify-center">0</span>
-            </div>
-            <p class="font-bold">₱ <span id="cart-total">0</span></p>
-        </div>
-        <button onclick="switchTab('cart')" class="bg-yellow-500 text-black px-5 py-1.5 rounded-full text-sm font-bold">去结算</button>
-    </div>
-<div id="spec-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-end">
-    
-    <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up">
-        <div class="flex justify-between items-start mb-4">
-            <div class="flex gap-4">
-                <div id="modal-icon" class="text-4xl w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center"></div>
-                <div>
-                    <h3 id="modal-name" class="font-bold text-lg"></h3>
-                    <p id="modal-price" class="text-orange-500 font-bold text-xl"></p>
-                </div>
-            </div>
-            <button onclick="closeModal()" class="text-gray-400 text-2xl">✕</button>
-        </div>
-
-        <div class="space-y-4 mb-8">
-            <div>
-                <p class="text-xs text-gray-400 mb-2">甜度</p>
-                <div class="flex gap-2" id="sugar-options">
-                    <button onclick="selectSpec(this, 'sugar')" class="spec-btn active">全糖</button>
-                    <button onclick="selectSpec(this, 'sugar')" class="spec-btn">七分</button>
-                    <button onclick="selectSpec(this, 'sugar')" class="spec-btn">五分</button>
-                    <button onclick="selectSpec(this, 'sugar')" class="spec-btn">无糖</button>
-                </div>
-            </div>
-            <div>
-                <p class="text-xs text-gray-400 mb-2">冰度</p>
-                <div class="flex gap-2" id="ice-options">
-                    <button onclick="selectSpec(this, 'ice')" class="spec-btn active">正常冰</button>
-                    <button onclick="selectSpec(this, 'ice')" class="spec-btn">少冰</button>
-                    <button onclick="selectSpec(this, 'ice')" class="spec-btn">去冰</button>
-                    <button onclick="selectSpec(this, 'ice')" class="spec-btn">常温</button>
-                </div>
-            </div>
-        </div>
-
-        <button onclick="confirmAddToCart()" class="w-full bg-yellow-400 py-4 rounded-xl font-bold shadow-lg active:scale-95 transition-transform">
-            加入清单
-        </button>
-    </div>
-</div>
-<!-- ====== Address Modal ====== -->
-<div id="address-modal" class="fixed inset-0 bg-black/50 z-[120] hidden items-end">
-  <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up">
-    <div class="flex justify-between items-center mb-4">
-      <div class="font-bold text-lg">📍 我的收货地址</div>
-      <button type="button" onclick="closeAddressModal()" class="text-gray-400 text-2xl">✕</button>
-    </div>
-
-    <div class="space-y-3">
-      <input id="addr-name" class="w-full border rounded-xl p-3 text-sm" placeholder="收货人姓名" />
-      <input id="addr-phone" class="w-full border rounded-xl p-3 text-sm" placeholder="联系电话（例如 09xx...）" />
-      <textarea id="addr-line" class="w-full border rounded-xl p-3 text-sm" rows="3" placeholder="详细地址（楼栋/门牌/街道/区）"></textarea>
-      <textarea id="addr-note" class="w-full border rounded-xl p-3 text-sm" rows="2" placeholder="备注（可选：门禁/时间/口味偏好）"></textarea>
-    </div>
-
-    <div class="mt-5 flex gap-3">
-      <button type="button" onclick="closeAddressModal()" class="flex-1 border rounded-xl py-3 font-bold">取消</button>
-      <button type="button" onclick="saveAddress()" class="flex-1 bg-yellow-400 rounded-xl py-3 font-bold">保存</button>
-    </div>
   </div>
-</div>
 
-<!-- ====== Support Modal ====== -->
-<div id="support-modal" class="fixed inset-0 bg-black/50 z-[120] hidden items-end">
-  <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up">
-    <div class="flex justify-between items-center mb-4">
-      <div class="font-bold text-lg">📞 联系客服</div>
-      <button type="button" onclick="closeSupportModal()" class="text-gray-400 text-2xl">✕</button>
-    </div>
-
-    <div class="space-y-3">
-      <button type="button" onclick="openSupportTelegram()" class="w-full bg-white border rounded-xl p-4 text-left">
-        <div class="font-bold">Telegram 客服</div>
-        <div class="text-xs text-gray-400 mt-1">点击打开聊天</div>
-      </button>
-
-      <a class="block w-full bg-white border rounded-xl p-4" href="tel:+63XXXXXXXXXX">
-        <div class="font-bold">电话</div>
-        <div class="text-xs text-gray-400 mt-1">+63XXXXXXXXXX（把号码改成你的）</div>
-      </a>
-
-      <a class="block w-full bg-white border rounded-xl p-4" href="https://wa.me/63XXXXXXXXXX" target="_blank" rel="noopener">
-        <div class="font-bold">WhatsApp</div>
-        <div class="text-xs text-gray-400 mt-1">点击打开 WhatsApp（把号码改成你的）</div>
-      </a>
-    </div>
-
-    <div class="mt-5">
-      <button type="button" onclick="closeSupportModal()" class="w-full border rounded-xl py-3 font-bold">关闭</button>
-    </div>
-  </div>
-</div>
-
-<!-- ====== Settings Modal ====== -->
-<div id="settings-modal" class="fixed inset-0 bg-black/50 z-[120] hidden items-end">
-  <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up">
-    <div class="flex justify-between items-center mb-4">
-      <div class="font-bold text-lg">⚙️ 个人设置</div>
-      <button type="button" onclick="closeSettingsModal()" class="text-gray-400 text-2xl">✕</button>
-    </div>
-
-    <div class="space-y-3">
-      <div class="bg-gray-50 rounded-xl p-4">
-        <div class="font-bold mb-2">语言</div>
-        <div class="flex gap-2">
-          <button type="button" onclick="switchLang('zh')" class="flex-1 border rounded-xl py-2 font-bold">中文</button>
-          <button type="button" onclick="switchLang('en')" class="flex-1 border rounded-xl py-2 font-bold">EN</button>
+  <div id="productModal" class="hidden fixed inset-0 z-40 bg-black/50">
+    <div class="absolute inset-x-0 bottom-0 max-w-md mx-auto bg-white rounded-t-3xl p-4">
+      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h2 id="modalName" class="text-lg font-bold"></h2>
+          <p id="modalPrice" class="text-amber-600 font-semibold mt-1"></p>
         </div>
+        <button onclick="closeProductModal()" class="text-slate-500 text-xl leading-none">×</button>
       </div>
 
-      <button type="button" onclick="clearSavedAddress()" class="w-full bg-white border rounded-xl p-4 text-left">
-        <div class="font-bold">清空收货地址</div>
-        <div class="text-xs text-gray-400 mt-1">删除本机保存的信息</div>
-      </button>
+      <div class="mt-4 space-y-4">
+        <div>
+          <div class="text-sm font-semibold mb-2">甜度</div>
+          <div id="sugarOptions" class="flex flex-wrap gap-2"></div>
+        </div>
 
-      <button type="button" onclick="clearCartAndRefresh()" class="w-full bg-white border rounded-xl p-4 text-left">
-        <div class="font-bold">清空购物车</div>
-        <div class="text-xs text-gray-400 mt-1">用于测试</div>
-      </button>
-    </div>
+        <div>
+          <div class="text-sm font-semibold mb-2">冰度</div>
+          <div id="iceOptions" class="flex flex-wrap gap-2"></div>
+        </div>
 
-    <div class="mt-5">
-      <button type="button" onclick="closeSettingsModal()" class="w-full border rounded-xl py-3 font-bold">关闭</button>
-    </div>
-  </div>
-</div>
-    <nav class="h-16 bg-white border-t flex items-center justify-around text-gray-500 shrink-0 z-50">
-        <button onclick="switchTab('home')" id="tab-home" class="flex flex-col items-center">
-            <span class="text-xl">🏠</span><span class="text-[10px]">首页</span>
-        </button>
-        <button onclick="switchTab('order')" id="tab-order" class="flex flex-col items-center">
-            <span class="text-xl">✋</span><span class="text-[10px]">点单</span>
-        </button>
-        <button onclick="switchTab('pickup')" id="tab-pickup" class="flex flex-col items-center">
-            <span class="text-xl">🎫</span><span class="text-[10px]">取单</span>
-        </button>
-        <button onclick="switchTab('cart')" id="tab-cart" class="flex flex-col items-center">
-            <span class="text-xl">🛒</span><span class="text-[10px]">清单</span>
-        </button>
-        <button onclick="switchTab('me')" id="tab-me" class="flex flex-col items-center">
-            <span class="text-xl">👤</span><span class="text-[10px]">我的</span>
-        </button>
-    </nav>
-    
-    <script>
-        // --- 数据配置 (已修复定义错误) ---
-         const menuData = [
-    // --- 奶盖系列 (M) ---
-    { id: 'M15', category: '奶盖系列', name: '蓝莓酸酸乳', price: 180, desc: '茶语精选', icon: '🥤' },
-    { id: 'M16', category: '奶盖系列', name: '橙橙酸酸乳', price: 180, desc: '茶语精选', icon: '🥤' },
-    { id: 'M17', category: '奶盖系列', name: '牛油果酸酸乳', price: 220, desc: '茶语精选', icon: '🥑' },
-    { id: 'M18', category: '奶盖系列', name: '芝士多肉葡萄', price: 200, desc: '人气爆款', icon: '🍇' },
-    { id: 'M19', category: '奶盖系列', name: '酸奶多肉葡萄', price: 200, desc: '茶语精选', icon: '🍇' },
-    { id: 'M20', category: '奶盖系列', name: '酸奶草莓啵啵冰', price: 200, desc: '茶语精选', icon: '🍓' },
-    { id: 'M21', category: '奶盖系列', name: '芝芝桃桃', price: 200, desc: '茶语精选', icon: '🍑' },
-    { id: 'M22', category: '奶盖系列', name: '酸奶芝芝桃桃', price: 200, desc: '茶语精选', icon: '🍑' },
-    { id: 'M24', category: '奶盖系列', name: '桂花酒酿冰奶', price: 200, desc: '茶语精选', icon: '🍶' },
-    { id: 'M25', category: '奶盖系列', name: '甜橙酸奶露', price: 200, desc: '茶语精选', icon: '🍊' },
-    { id: 'M26', category: '奶盖系列', name: '芝芝海盐凤梨', price: 200, desc: '茶语精选', icon: '🍍' },
-    { id: 'M27', category: '奶盖系列', name: '鲜榨橙子胡萝卜汁', price: 220, desc: '健康推荐', icon: '🥕' },
-    { id: 'M28', category: '奶盖系列', name: '鲜榨黄瓜柠檬汁', price: 220, desc: '清爽推荐', icon: '🥒' },
-    { id: 'M29', category: '奶盖系列', name: '凤梨酸奶冰', price: 200, desc: '茶语精选', icon: '🍍' },
-    { id: 'M30', category: '奶盖系列', name: '芝士多肉青提', price: 200, desc: '茶语精选', icon: '🍇' },
-    { id: 'M31', category: '奶盖系列', name: '青提酸奶冰', price: 200, desc: '茶语精选', icon: '🍇' },
-    { id: 'M32', category: '奶盖系列', name: '芝芝蓝莓', price: 200, desc: '茶语精选', icon: '🫐' },
-    { id: 'M33', category: '奶盖系列', name: '牛油果酸奶君', price: 220, desc: '茶语精选', icon: '🥑' },
-    { id: 'M34', category: '奶盖系列', name: '芒果茉莉冰奶', price: 200, desc: '茶语精选', icon: '🥭' },
-    { id: 'M35', category: '奶盖系列', name: '青提茉莉冰奶', price: 220, desc: '茶语精选', icon: '🍇' },
+        <div>
+          <div class="text-sm font-semibold mb-2">加料</div>
+          <div id="toppingOptions" class="flex flex-wrap gap-2"></div>
+        </div>
 
-    // --- 小吃系列 (S) ---
-    { id: 'S01', category: '小吃系列', name: '奥尔良鸡翅', price: 120, desc: '香嫩入味', icon: '🍗' },
-    { id: 'S02', category: '小吃系列', name: '香酥鸡排', price: 140, desc: '外酥里嫩', icon: '🥩' },
-    { id: 'S03', category: '小吃系列', name: '香辣鸡翅根', price: 150, desc: '热辣过瘾', icon: '🍗' },
-    { id: 'S04', category: '小吃系列', name: '台湾烤肠', price: 60, desc: '地道风味', icon: '🌭' },
-    { id: 'S05', category: '小吃系列', name: '黑香鸡柳', price: 60, desc: '休闲必备', icon: '🍟' },
-    { id: 'S06', category: '小吃系列', name: '骨肉相连', price: 60, desc: '经典串串', icon: '🍢' },
-    { id: 'S07', category: '小吃系列', name: '麦乐鸡米花', price: 120, desc: '一口一个', icon: ' 🍗' },
-    { id: 'S08', category: '小吃系列', name: '风味薯条', price: 120, desc: '大份酥脆', icon: '🍟' },
-    { id: 'S10', category: '小吃系列', name: '墨鱼丸', price: 140, desc: 'Q弹鲜香', icon: '🍡' },
-    { id: 'S11', category: '小吃系列', name: '奥尔良腿排', price: 120, desc: '整块腿肉', icon: '🍗' },
-    { id: 'S12', category: '小吃系列', name: '小吃拼盘(1)', price: 500, desc: '超值组合', icon: '🍱' },
-    { id: 'S13', category: '小吃系列', name: '黄金地瓜条', price: 150, desc: '香甜可口', icon: '🍠' },
-    { id: 'S14', category: '小吃系列', name: '雪花鸡柳', price: 150, desc: '经典美味', icon: '🍟' },
-    { id: 'S15', category: '小吃系列', name: '黑椒鸡块', price: 140, desc: '经典黑椒', icon: '🍗' },
-    { id: 'S16', category: '小吃系列', name: '鸡翅包饭', price: 200, desc: '特色推荐', icon: '🍗' },
-    { id: 'S17', category: '小吃系列', name: '香芋地瓜丸(6个)', price: 150, desc: '甜心小食', icon: '🍡' },
-    { id: 'S19', category: '小吃系列', name: '奥尔良全鸡', price: 500, desc: '全家共享', icon: '🍗' },
-    { id: 'S20', category: '小吃系列', name: '奥尔良手枪鸡腿', price: 200, desc: '大满足', icon: '🍗' },
-    { id: 'S21', category: '小吃系列', name: '酥炸杏鲍菇', price: 200, desc: '菌香酥脆', icon: '🍄' },
-    { id: 'S27', category: '小吃系列', name: '爆浆鸡排', price: 220, desc: '小心烫口', icon: '🥩' },
-    { id: 'S28', category: '小吃系列', name: '手撕猪扒', price: 180, desc: '肉质紧实', icon: '🥩' },
-    { id: 'S29', category: '小吃系列', name: '香辣猪蹄', price: 240, desc: '满满胶原', icon: '🐖' },
-    { id: 'S30', category: '小吃系列', name: '三色芋泥卷(5个)', price: 200, desc: '软糯香甜', icon: '🍮' },
-    { id: 'S33', category: '小吃系列', name: '金黄小酥肉', price: 150, desc: '酥脆爽口', icon: '🍟' },
-    { id: 'S36', category: '小吃系列', name: '韩式炸鸡(甜辣)', price: 300, desc: '经典韩流', icon: '🍗' },
-    { id: 'S37', category: '小吃系列', name: '韩式炸鸡(咸蛋黄)', price: 300, desc: '咸香诱人', icon: '🍗' },
-    { id: 'S42', category: '小吃系列', name: '韩式炸鸡(蜂蜜芥末)', price: 300, desc: '清甜不腻', icon: '🍗' },
-    { id: 'S44', category: '小吃系列', name: '秘制脆皮炸全鸡', price: 600, desc: '招牌推荐', icon: '🍗' },
-    { id: 'S50', category: '小吃系列', name: '玖焖羊排', price: 1000, desc: '硬核单品', icon: '🍖' },
-    { id: 'S55', category: '小吃系列', name: '一只脆皮鸭', price: 1000, desc: '豪华推荐', icon: '🦆' },
-    { id: 'S56', category: '小吃系列', name: '香辣牛仔骨', price: 780, desc: '肉香四溢', icon: '🥩' },
-    { id: 'S81', category: '小吃系列', name: '秘制麻辣凉拌鸡爪', price: 380, desc: '追剧神器', icon: '🐾' },
-    { id: 'S82', category: '小吃系列', name: '麻辣孜然土豆', price: 280, desc: '地道风味', icon: '🥔' },
-    { id: 'S83', category: '小吃系列', name: '脆皮淀粉肠', price: 120, desc: '街头回忆', icon: '🌭' },
-    // --- 补全：漏掉的小吃 (S系列) ---
-    { id: 'S22', category: '小吃系列', name: '小吃拼盘(2)', price: 500, desc: '聚会首选', icon: '🍱' },
-    { id: 'S23', category: '小吃系列', name: '小吃拼盘(3)', price: 500, desc: '分量十足', icon: '🍱' },
-    { id: 'S34', category: '小吃系列', name: '小吃拼盘(4)', price: 320, desc: '精选组合', icon: '🍱' },
-    { id: 'S38', category: '小吃系列', name: '韩式炸鸡(酸辣味)', price: 300, desc: '开胃过瘾', icon: '🍗' },
-    { id: 'S39', category: '小吃系列', name: '韩式炸鸡(原味)', price: 300, desc: '经典本味', icon: '🍗' },
-    { id: 'S40', category: '小吃系列', name: '韩式炸鸡(酱油蒜香)', price: 300, desc: '蒜香诱人', icon: '🍗' },
-    { id: 'S41', category: '小吃系列', name: '韩式炸鸡(辣味)', price: 300, desc: '火辣口感', icon: '🍗' },
-    { id: 'S43', category: '小吃系列', name: '秘制藤椒鸡腿', price: 300, desc: '麻辣鲜香', icon: '🍗' },
-    { id: 'S46', category: '小吃系列', name: '脆皮炸鸡中翅(一对)', price: 150, desc: '金黄酥脆', icon: '🍗' },
-    { id: 'S47', category: '小吃系列', name: '脆皮炸鸡腿', price: 220, desc: '大口吃肉', icon: '🍗' },
-    { id: 'S48', category: '小吃系列', name: '香菇贡丸(两串)', price: 150, desc: 'Q弹入味', icon: '🍢' },
-    { id: 'S49', category: '小吃系列', name: '赛西施鸡排', price: 220, desc: '招牌推荐', icon: '🥩' },
-    { id: 'S51', category: '小吃系列', name: '脆皮炸年糕(2根)', price: 150, desc: '软糯拉丝', icon: '🍢' },
-    { id: 'S53', category: '小吃系列', name: '爆炸大鱿鱼', price: 220, desc: '整只豪横', icon: '🦑' },
-    { id: 'S59', category: '小吃系列', name: '蒜香小排骨', price: 480, desc: '蒜香入骨', icon: '🥩' },
-    { id: 'S60', category: '小吃系列', name: '脆皮炸香蕉(5个)', price: 220, desc: '外酥里甜', icon: '🍌' },
-    { id: 'S68', category: '小吃系列', name: '天妇罗鲜虾棒', price: 200, desc: '鲜美虾肉', icon: '🍤' },
-    { id: 'S74', category: '小吃系列', name: '霸气卤香手枪腿', price: 320, desc: '卤香浓郁', icon: '🍗' },
-    { id: 'S77', category: '小吃系列', name: '爆汁牛筋丸(6个)', price: 200, desc: '弹力十足', icon: '🍡' },
-    { id: 'S78', category: '小吃系列', name: '茶语金排骨', price: 680, desc: '独家秘制', icon: '🥩' },
-    { id: 'S79', category: '小吃系列', name: '脆炸金针菇', price: 200, desc: '咔嚓脆响', icon: '🍄' },
-
-    // --- 店长推荐 (N) ---
-    { id: 'N01', category: '店长推荐', name: '珍珠奶茶', price: 130, desc: '经典NO.1', icon: '🧋' },
-    { id: 'N02', category: '店长推荐', name: '椰果奶茶', price: 130, desc: 'Q弹椰果', icon: '🧋' },
-    { id: 'N03', category: '店长推荐', name: '芋圆奶茶', price: 150, desc: '手作芋圆', icon: '🧋' },
-    { id: 'N09', category: '店长推荐', name: '熊猫奶茶', price: 150, desc: '人气推荐', icon: '🐼' },
-    { id: 'N10', category: '店长推荐', name: '奶茶三兄弟', price: 150, desc: '料多超满足', icon: '🧋' },
-    { id: 'N20', category: '店长推荐', name: '霸气珍珠奶茶(6L)', price: 1200, desc: '聚会神器', icon: '🏺' },
-    { id: 'N23', category: '店长推荐', name: '芋泥啵啵奶茶', price: 180, desc: '手捣芋泥', icon: '🧋' },
-    { id: 'N29', category: '店长推荐', name: '霸气金桔柠檬(6L)', price: 1800, desc: '巨无霸桶', icon: '🏺' },
-    { id: 'N31', category: '店长推荐', name: '霸气西瓜汁(6L)', price: 1800, desc: '派对狂欢', icon: '🏺' },
-    // --- 补全：漏掉的店长推荐/奶茶 (N系列) ---
-    { id: 'N04', category: '店长推荐', name: '血糯米奶茶', price: 150, desc: '软糯营养', icon: '🧋' },
-    { id: 'N05', category: '店长推荐', name: '燕麦奶茶', price: 150, desc: '谷物香气', icon: '🧋' },
-    { id: 'N06', category: '店长推荐', name: '布丁奶茶', price: 130, desc: '滑嫩布丁', icon: '🧋' },
-    { id: 'N07', category: '店长推荐', name: '仙草奶茶', price: 130, desc: '清凉仙草', icon: '🧋' },
-    { id: 'N08', category: '店长推荐', name: '红豆奶茶', price: 130, desc: '相思红豆', icon: '🧋' },
-    { id: 'N11', category: '店长推荐', name: '抹茶红豆', price: 150, desc: '和风物语', icon: '🍵' },
-    { id: 'N12', category: '店长推荐', name: '可可奶茶', price: 150, desc: '浓郁丝滑', icon: '🍫' },
-    { id: 'N16', category: '店长推荐', name: '芒果欧蕾', price: 150, desc: '鲜果与奶', icon: '🥭' },
-    { id: 'N17', category: '店长推荐', name: '蓝莓欧蕾', price: 150, desc: '浓郁蓝莓', icon: '🥛' },
-    { id: 'N18', category: '店长推荐', name: '草莓欧蕾', price: 150, desc: '少女心动', icon: '🍓' },
-    { id: 'N19', category: '店长推荐', name: '茉香奶绿', price: 150, desc: '清新怡人', icon: '🍃' },
-    { id: 'N22', category: '店长推荐', name: '原味奶茶', price: 110, desc: '入门首选', icon: '🧋' },
-    { id: 'N28', category: '店长推荐', name: '可可冰鲜奶', price: 200, desc: '醇厚可可', icon: '🥛' },
-    { id: 'N30', category: '店长推荐', name: '霸气满杯百香果(6L)', price: 1800, desc: '巨无霸桶', icon: '🏺' },
-
-    // --- 果茶系列 (F) ---
-    { id: 'F04', category: '果茶系列', name: '金桔柠檬', price: 150, desc: '酸甜开胃', icon: '🍋' },
-    { id: 'F05', category: '果茶系列', name: '满杯百香果', price: 150, desc: '维C满满', icon: '🍹' },
-    { id: 'F07', category: '果茶系列', name: '超级水果茶', price: 180, desc: '满杯水果', icon: '🍹' },
-    { id: 'F09', category: '果茶系列', name: '杨枝甘露', price: 200, desc: '港式经典', icon: '🥭' },
-    { id: 'F20', category: '果茶系列', name: '手打草莓冰柠茶', price: 200, desc: '清爽爆款', icon: '🍓' },
-    { id: 'F28', category: '果茶系列', name: '满杯水果桶', price: 240, desc: '1000ml大容量', icon: '🪣' },
-    { id: 'F39', category: '果茶系列', name: '手打鸭屎香柠檬茶', price: 180, desc: '爆爽解腻', icon: '🍋' },
-    { id: 'F46', category: '果茶系列', name: '一桶爆有料奶茶', price: 240, desc: '料多喝到饱', icon: '🪣' },
-    // --- 补全：漏掉的果茶/特调 (F系列) ---
-    { id: 'F01', category: '果茶系列', name: '新鲜椰汁', price: 130, desc: '清甜甘露', icon: '🥥' },
-    { id: 'F11', category: '果茶系列', name: '蓝莓啵啵茶', price: 180, desc: '果香浓郁', icon: '🥤' },
-    { id: 'F12', category: '果茶系列', name: '柠檬酸奶菌', price: 180, desc: '助消化', icon: '🥤' },
-    { id: 'F15', category: '果茶系列', name: '哈密瓜柠檬茶', price: 180, desc: '清新夏日', icon: '🍈' },
-    { id: 'F16', category: '果茶系列', name: '百香果双响炮', price: 180, desc: '珍珠+椰果', icon: '🍹' },
-    { id: 'F18', category: '果茶系列', name: '凤梨乳酸菌', price: 180, desc: '酸甜平衡', icon: '🍍' },
-    { id: 'F21', category: '果茶系列', name: '抹茶草莓圣诞奶', price: 220, desc: '高颜值', icon: '🎄' },
-    { id: 'F23', category: '果茶系列', name: '暴打橙柠绿', price: 200, desc: '满口果香', icon: '🍊' },
-    { id: 'F27', category: '果茶系列', name: '西瓜啵啵茉莉茶', price: 180, desc: '解暑必备', icon: '🍉' },
-    { id: 'F31', category: '果茶系列', name: '菠萝酒酿桂花饮', price: 200, desc: '国风特调', icon: '🌼' },
-    { id: 'F37', category: '果茶系列', name: '火龙果气泡养乐多', price: 180, desc: '颜值爆表', icon: '🍹' },
-    { id: 'F40', category: '果茶系列', name: '茶语鲜牛乳茶', price: 200, desc: '纯鲜牛奶', icon: '🥛' },
-    { id: 'F42', category: '果茶系列', name: '青提冰茉莉', price: 180, desc: '淡雅脱俗', icon: '🍇' },
-    { id: 'F50', category: '果茶系列', name: '西瓜啵啵椰', price: 200, desc: '夏日绝配', icon: '🥥' },
-
-    // --- 鲜榨果汁 (H) ---
-    { id: 'H01', category: '鲜榨果汁', name: '鲜榨西瓜汁', price: 130, desc: '清甜解暑', icon: '🍉' },
-    { id: 'H02', category: '鲜榨果汁', name: '芒果冰沙', price: 150, desc: '细腻冰爽', icon: '🥭' },
-    { id: 'H04', category: '鲜榨果汁', name: '牛油果啵啵冰', price: 200, desc: '绵密丝滑', icon: '🥑' },
-    { id: 'H10', category: '鲜榨果汁', name: '鲜榨橙汁', price: 160, desc: '现点现榨', icon: '🍊' },
-    { id: 'H27', category: '鲜榨果汁', name: '芒果酸奶露', price: 200, desc: '香甜浓郁', icon: '🥭' },
-    { id: 'H29', category: '鲜榨果汁', name: '鲜榨火龙果汁', price: 220, desc: '通畅健康', icon: '🌵' }, // 这里原本多了一个 ]; 我帮你删了，换成了逗号
-    // --- 补全：漏掉的鲜榨/奶昔 (H系列) ---
-    { id: 'H03', category: '鲜榨果汁', name: '哈密瓜奶昔', price: 150, desc: '醇厚果香', icon: '🍈' },
-    { id: 'H05', category: '鲜榨果汁', name: '木瓜奶昔', price: 150, desc: '滋补美颜', icon: '🥤' },
-    { id: 'H06', category: '鲜榨果汁', name: '香蕉奶昔', price: 150, desc: '浓郁能量', icon: '🍌' },
-    { id: 'H07', category: '鲜榨果汁', name: '草莓冰沙', price: 150, desc: '粉色回忆', icon: '🍓' },
-    { id: 'H08', category: '鲜榨果汁', name: '芒果牛奶', price: 160, desc: '经典组合', icon: '🥭' },
-    { id: 'H13', category: '鲜榨果汁', name: '芒果百香恋', price: 180, desc: '热带风情', icon: '🥭' },
-    { id: 'H16', category: '鲜榨果汁', name: '哈密瓜香蕉奶昔', price: 180, desc: '丝滑口感', icon: '🥛' },
-    { id: 'H17', category: '鲜榨果汁', name: '芝芝芒果', price: 180, desc: '奶盖芒果', icon: '🥭' },
-    { id: 'H21', category: '鲜榨果汁', name: '芝芝西瓜', price: 180, desc: '咸甜爽口', icon: '🍉' },
-    { id: 'H25', category: '鲜榨果汁', name: '紫米酸奶露', price: 190, desc: '嚼劲十足', icon: '🥣' },
-    { id: 'H26', category: '鲜榨果汁', name: '燕麦酸奶露', price: 190, desc: '低脂健康', icon: '🥛' },
-    { id: 'H28', category: '鲜榨果汁', name: '满杯桂花酒酿酸奶', price: 200, desc: '独特风味', icon: '🥣' },
-    { id: 'H30', category: '鲜榨果汁', name: '黑糖珍珠碎碎冰', price: 200, desc: '冰爽一夏', icon: '🧊' }
-]; // 这个才是真正的数组结尾！
-        // ====== Global Namespace (avoid duplicate declarations) ======
-window.APP = window.APP || {};
-APP.STORE = APP.STORE || {};
-APP.UI = APP.UI || {};
-APP.KEYS = APP.KEYS || {
-  ADDRESS: 'tiktalk_address_v1',
-  ORDERS:  'tiktalk_orders_v1'
-};
-APP.STORE.loadAddress = function () {
-  try {
-    return JSON.parse(localStorage.getItem(APP.KEYS.ADDRESS) || 'null');
-  } catch (e) {
-    return null;
-  }
-};
-
-APP.STORE.saveAddress = function (payload) {
-  try {
-    localStorage.setItem(APP.KEYS.ADDRESS, JSON.stringify(payload));
-  } catch (e) {}
-};
-
-APP.STORE.clearAddress = function () {
-  try {
-    localStorage.removeItem(APP.KEYS.ADDRESS);
-  } catch (e) {}
-};
-        // ====== PATCH 1: 全局状态（必须有）======
-let cart = [];
-let currentItem = null;
-let currentTab = 'home';
-const CART_KEY = 'tiktalk_cart_v1';
-try {
-  const saved = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-  if (Array.isArray(saved)) cart = saved;
-} catch (e) {}
-
-function persistCart() {
-  try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch (e) {}
-}
-        APP.UI.refreshMeSummary = function () {
-  const el = document.getElementById('me-address-summary');
-  if (!el) return;
-  const a = APP.STORE.loadAddress();
-  if (!a) { el.innerText = '未填写'; return; }
-  const short = `${a.name || ''} · ${a.phone || ''} · ${a.addr || ''}`.trim();
-  el.innerText = short.length > 40 ? short.slice(0, 40) + '…' : short;
-};
-// --- 终极防御版初始化 ---
-// 以后全文都直接用 tg，不要再加 const 或 let
-
-        // --- 1. 切换页面逻辑 ---
-        function switchTab(tabId) {
-            currentTab = tabId;
-            // 1. 增加这两个新页面的隐藏
-            document.getElementById('page-home').classList.add('hidden');
-            document.getElementById('page-order').classList.add('hidden');
-            document.getElementById('page-cart').classList.add('hidden');
-            document.getElementById('page-pickup').classList.add('hidden'); // 新增
-            document.getElementById('page-me').classList.add('hidden');     // 新增
-            if (tabId === 'me') {
-  if (typeof bindMePageActions === 'function') {
-    bindMePageActions();
-  }
-}
-            document.getElementById('cart-preview').classList.add('hidden');
-            
-            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-tab'));
-
-            document.getElementById('page-' + tabId).classList.remove('hidden');
-            document.getElementById('tab-' + tabId).classList.add('active-tab');
-
-            // 保持原有的 order 和 cart 逻辑不变...
-            if (tabId === 'order') {
-  renderOrderPage();
-  if (cart.length > 0) document.getElementById('cart-preview').classList.remove('hidden');
-} else if (tabId === 'cart') {
-  renderCartPage();
-} else if (tabId === 'pickup') {
-  // ✅ 关键：切到取单页就刷新列表
-  if (typeof renderPickupPage === 'function') renderPickupPage();
-}
-        }
-
-      // --- 2. 渲染点单页（含数量 + 联动高亮）---
-function renderOrderPage() {
-  const categories = [...new Set(menuData.map(item => item.category))];
-  const catNav = document.getElementById('category-list');
-  const prodCont = document.getElementById('product-container');
-  if (!catNav || !prodCont) return;
-
-  // 左侧分类
-  catNav.innerHTML = categories.map((cat, idx) => `
-    <div onclick="scrollToCat('${cat}')" class="p-4 text-center text-[11px] border-b cursor-pointer cat-btn ${idx===0?'category-active':''}" id="btn-${cat}">
-      ${cat}
-    </div>
-  `).join('');
-
-  // 右侧商品（每个商品显示：- qty +）
-  prodCont.innerHTML = categories.map(cat => `
-    <div id="section-${cat}" class="mb-8 category-section">
-      <h2 class="text-[13px] font-extrabold text-gray-500 tracking-wider uppercase mb-3">${cat}</h2>
-      <div class="space-y-4">
-        ${menuData.filter(item => item.category === cat).map(item => {
-          const qty = getQtyByProductId(item.id); // 总数量（同商品不同规格也累计）
-          const showMinus = qty > 0;
-
-          return `
-            <div class="flex items-center gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-              <div class="w-14 h-14 bg-gray-50 rounded flex items-center justify-center text-2xl shrink-0">${item.icon}</div>
-
-              <div class="flex-1 min-w-0">
-                <h3 class="font-bold text-xs truncate">${item.id} | ${item.name}</h3>
-                <p class="text-orange-500 font-bold text-sm">₱ ${item.price}</p>
-              </div>
-
-              <div class="flex items-center gap-2">
-                ${showMinus ? `<button onclick="orderMinus('${item.id}')" class="w-8 h-8 rounded-full border font-bold">-</button>` : `<span class="w-8"></span>`}
-                <span class="w-6 text-center font-bold">${qty}</span>
-                <button onclick="handleAddClick('${item.id}')" class="bg-yellow-400 w-8 h-8 rounded-full font-bold active:scale-90 shadow-sm">+</button>
-              </div>
-            </div>
-          `;
-        }).join('')}
+        <div class="flex items-center justify-between pt-2">
+          <div class="flex items-center gap-3">
+            <button id="qtyMinus" class="w-9 h-9 rounded-full bg-slate-100 text-lg">-</button>
+            <span id="qtyValue" class="w-6 text-center font-semibold">1</span>
+            <button id="qtyPlus" class="w-9 h-9 rounded-full bg-slate-100 text-lg">+</button>
+          </div>
+          <button id="addToCartBtn" class="px-5 py-3 rounded-full bg-amber-500 text-white font-semibold">加入购物车</button>
+        </div>
       </div>
     </div>
-  `).join('');
+  </div>
 
-  // 右侧滚动联动左侧高亮
-  prodCont.onscroll = () => {
-    let currentCat = '';
-    document.querySelectorAll('.category-section').forEach(section => {
-      const sectionTop = section.offsetTop - prodCont.offsetTop;
-      if (prodCont.scrollTop >= sectionTop - 50) {
-        currentCat = section.id.replace('section-', '');
+  <div id="cartDrawer" class="hidden fixed inset-0 z-50 bg-black/50">
+    <div class="absolute inset-x-0 bottom-0 max-w-md mx-auto bg-white rounded-t-3xl p-4 max-h-[85vh] overflow-hidden flex flex-col">
+      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-bold">购物车</h2>
+        <button onclick="closeCart()" class="text-slate-500 text-xl leading-none">×</button>
+      </div>
+
+      <div id="cartItems" class="flex-1 overflow-auto space-y-3"></div>
+
+      <div class="border-t pt-4 mt-4 space-y-3">
+        <div class="flex items-center justify-between text-base font-semibold">
+          <span>合计</span>
+          <span id="cartTotal">₱0</span>
+        </div>
+        <button id="goCheckoutBtn" class="w-full py-3 rounded-full bg-amber-500 text-white font-semibold">去结算</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="checkoutDrawer" class="hidden fixed inset-0 z-50 bg-black/50">
+    <div class="absolute inset-x-0 bottom-0 max-w-md mx-auto bg-white rounded-t-3xl p-4 max-h-[90vh] overflow-auto">
+      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4"></div>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-bold">确认订单</h2>
+        <button onclick="closeCheckout()" class="text-slate-500 text-xl leading-none">×</button>
+      </div>
+
+      <div class="space-y-3">
+        <input id="customerName" class="w-full border rounded-xl px-4 py-3" placeholder="联系人姓名" />
+        <input id="customerPhone" class="w-full border rounded-xl px-4 py-3" placeholder="联系电话" />
+        <textarea id="customerAddress" class="w-full border rounded-xl px-4 py-3 min-h-[100px]" placeholder="收货地址"></textarea>
+        <textarea id="customerNote" class="w-full border rounded-xl px-4 py-3 min-h-[90px]" placeholder="备注（选填）"></textarea>
+      </div>
+
+      <div class="mt-4 p-3 rounded-2xl bg-slate-50">
+        <div class="font-semibold mb-2">订单预览</div>
+        <div id="checkoutSummary" class="space-y-2 text-sm"></div>
+      </div>
+
+      <button id="submitOrderBtn" class="w-full mt-4 py-3 rounded-full bg-emerald-600 text-white font-semibold">提交订单（Day 1 为假提交）</button>
+    </div>
+  </div>
+
+  <script>
+    const APP = {
+      telegram: window.Telegram?.WebApp || null,
+      state: {
+        activeCategory: 'recommended',
+        cart: [],
+        currentProduct: null,
+        currentQty: 1,
+        currentSugar: '100%',
+        currentIce: '正常冰',
+        currentToppings: []
+      },
+      options: {
+        sugar: ['0%', '25%', '50%', '75%', '100%'],
+        ice: ['去冰', '少冰', '正常冰', '多冰'],
+        toppings: [
+          { name: '珍珠', price: 20 },
+          { name: '椰果', price: 20 },
+          { name: '布丁', price: 20 },
+          { name: '仙草冻', price: 20 },
+          { name: '芋圆', price: 30 }
+        ]
+      },
+      data: {
+        categories: [
+          { id: 'recommended', name: '店长推荐' },
+          { id: 'milk-tea', name: '奶茶系列' },
+          { id: 'fruit-tea', name: '果茶系列' },
+          { id: 'snacks', name: '小吃系列' }
+        ],
+        products: [
+
+/* ================= 汉堡&意面 ================= */
+{ id:'B01', category:'hamburg', name:'经典培根芝士热狗', price:220, desc:'汉堡意面' },
+{ id:'B02', category:'hamburg', name:'奥尔良鸡肉热狗', price:240, desc:'汉堡意面' },
+{ id:'B03', category:'hamburg', name:'肉松海苔培根热狗', price:240, desc:'汉堡意面' },
+{ id:'B04', category:'hamburg', name:'凤梨牛肉汉堡', price:240, desc:'汉堡意面' },
+{ id:'B05', category:'hamburg', name:'黑椒鸡扒汉堡', price:240, desc:'汉堡意面' },
+{ id:'B11', category:'hamburg', name:'黑椒牛柳意面', price:520, desc:'汉堡意面' },
+{ id:'B12', category:'hamburg', name:'番茄海鲜意面', price:520, desc:'汉堡意面' },
+{ id:'B13', category:'hamburg', name:'黑椒鸡扒意面', price:550, desc:'汉堡意面' },
+{ id:'B14', category:'hamburg', name:'炸鸡煎蛋火鸡面', price:380, desc:'汉堡意面' },
+{ id:'B15', category:'hamburg', name:'韩式麻酱火鸡面', price:380, desc:'汉堡意面' },
+{ id:'B16', category:'hamburg', name:'酸豆角鸡蛋炒面', price:320, desc:'汉堡意面' },
+{ id:'B17', category:'hamburg', name:'酸豆角鸡蛋炒饭', price:340, desc:'汉堡意面' },
+{ id:'B18', category:'hamburg', name:'酸豆角炒河粉', price:360, desc:'汉堡意面' },
+
+/* ================= 手抓饼 ================= */
+{ id:'P01', category:'pancake', name:'手抓饼', price:160, desc:'手抓饼系列' },
+{ id:'P02', category:'pancake', name:'手抓饼+鸡柳', price:200, desc:'手抓饼系列' },
+{ id:'P03', category:'pancake', name:'手抓饼+烤肠', price:220, desc:'手抓饼系列' },
+{ id:'P04', category:'pancake', name:'手抓饼+鸡柳+骨肉相连', price:260, desc:'手抓饼系列' },
+{ id:'P05', category:'pancake', name:'手抓饼+鸡腿排', price:260, desc:'手抓饼系列' },
+{ id:'P06', category:'pancake', name:'奥尔良腿排堡', price:200, desc:'手抓饼系列' },
+{ id:'P07', category:'pancake', name:'滑蛋火腿三明治', price:220, desc:'手抓饼系列' },
+{ id:'P08', category:'pancake', name:'香辣鸡腿堡', price:220, desc:'手抓饼系列' },
+{ id:'P10', category:'pancake', name:'经典鸡肉卷', price:200, desc:'手抓饼系列' },
+{ id:'P11', category:'pancake', name:'火鸡面磅肠卷饼', price:220, desc:'手抓饼系列' },
+{ id:'P12', category:'pancake', name:'火鸡面鸡柳卷饼', price:220, desc:'手抓饼系列' },
+{ id:'P13', category:'pancake', name:'火鸡面鸡腿排卷饼', price:240, desc:'手抓饼系列' },
+{ id:'P14', category:'pancake', name:'黄金蛋炒饭', price:280, desc:'手抓饼系列' },
+{ id:'P15', category:'pancake', name:'老干妈鸡蛋火腿蛋炒饭', price:320, desc:'手抓饼系列' },
+{ id:'P16', category:'pancake', name:'虾仁时蔬蛋炒饭', price:360, desc:'手抓饼系列' },
+{ id:'P17', category:'pancake', name:'凉拌鲜河粉', price:280, desc:'手抓饼系列' },
+{ id:'P18', category:'pancake', name:'淀粉肠鸡蛋手抓饼', price:280, desc:'手抓饼系列' },
+{ id:'P20', category:'pancake', name:'香蕉芝士披萨（8英寸）', price:680, desc:'手抓饼系列' },
+{ id:'P21', category:'pancake', name:'夏威夷风情披萨（8英寸）', price:780, desc:'手抓饼系列' },
+{ id:'P22', category:'pancake', name:'奥尔良烤肉虾仁披萨（8英寸）', price:780, desc:'手抓饼系列' },
+{ id:'P23', category:'pancake', name:'榴莲芝士披萨（8英寸）', price:780, desc:'手抓饼系列' },
+
+/* ================= 甜品（节选开头）================= */
+{ id:'D01', category:'dessert', name:'红糖冰粉', price:220, desc:'甜品系列' },
+{ id:'D02', category:'dessert', name:'芋圆烧仙草', price:260, desc:'甜品系列' },
+{ id:'D03', category:'dessert', name:'酸奶水果捞', price:340, desc:'甜品系列' },
+{ id:'D04', category:'dessert', name:'水果红糖冰粉', price:300, desc:'甜品系列' },
+{ id:'D05', category:'dessert', name:'水果拼盘', price:350, desc:'甜品系列' },
+
+/* ================= 小吃 ================= */
+{ id:'S01', category:'snacks', name:'奥尔良鸡翅', price:120, desc:'小吃系列' },
+{ id:'S02', category:'snacks', name:'香酥鸡排', price:140, desc:'小吃系列' },
+{ id:'S03', category:'snacks', name:'香辣鸡翅根', price:150, desc:'小吃系列' },
+{ id:'S04', category:'snacks', name:'台湾烤肠', price:60, desc:'小吃系列' },
+{ id:'S05', category:'snacks', name:'飘香鸡柳', price:60, desc:'小吃系列' },
+
+/* ================= 奶茶 ================= */
+{ id:'N01', category:'recommended', name:'珍珠奶茶', price:130, desc:'推荐' },
+{ id:'N02', category:'recommended', name:'椰果奶茶', price:130, desc:'推荐' },
+{ id:'N03', category:'recommended', name:'芋圆奶茶', price:150, desc:'推荐' },
+{ id:'N04', category:'milk-tea', name:'血糯米奶茶', price:150, desc:'奶茶' },
+{ id:'N05', category:'milk-tea', name:'燕麦奶茶', price:150, desc:'奶茶' },
+
+/* ================= 果茶 ================= */
+{ id:'F01', category:'fruit-tea', name:'新鲜椰汁', price:130, desc:'果茶' },
+{ id:'F02', category:'fruit-tea', name:'柠檬红茶', price:130, desc:'果茶' },
+{ id:'F03', category:'fruit-tea', name:'柠檬绿茶', price:130, desc:'果茶' },
+{ id:'F04', category:'fruit-tea', name:'金桔柠檬', price:150, desc:'果茶' },
+{ id:'F05', category:'fruit-tea', name:'满杯百香果', price:150, desc:'果茶' },
+
+/* ================= 奶盖 ================= */
+{ id:'M01', category:'milk-cover', name:'芝士奶盖', price:150, desc:'奶盖' },
+{ id:'M02', category:'milk-cover', name:'红茶奶盖', price:150, desc:'奶盖' },
+{ id:'M03', category:'milk-cover', name:'绿茶奶盖', price:150, desc:'奶盖' },
+{ id:'M04', category:'milk-cover', name:'草莓奶盖', price:150, desc:'奶盖' },
+
+]
       }
-    });
+    };
 
-    if (currentCat) {
-      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('category-active'));
-      const targetBtn = document.getElementById('btn-' + currentCat);
-      if (targetBtn) targetBtn.classList.add('category-active');
+    function peso(n) {
+      return `₱${Number(n).toFixed(0)}`;
     }
-  };
-}
 
-// --- 3. 滚动函数 (点左边，右边动) ---
-function scrollToCat(catName) {
-  const prodCont = document.getElementById('product-container');
-  const element = document.getElementById('section-' + catName);
-  if (!prodCont || !element) return;
-
-  const savedHandler = prodCont.onscroll;
-  prodCont.onscroll = null;
-
-  element.scrollIntoView({ behavior: 'smooth' });
-
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('category-active'));
-  const activeBtn = document.getElementById('btn-' + catName);
-  if (activeBtn) activeBtn.classList.add('category-active');
-
-  setTimeout(() => { prodCont.onscroll = savedHandler; }, 800);
-}
-        // --- 4. 购物车逻辑 ---
-        
-        
-        function makeCartKey(id, specs) {
-  return `${id}|${(specs || '').trim()}`;
-}
-
-function cartInc(item, specs = '') {
-  const key = makeCartKey(item.id, specs);
-  const line = cart.find(x => x.key === key);
-
-  if (line) {
-    line.qty += 1;
-  } else {
-    cart.push({
-      key,
-      id: item.id,
-      name: item.name,
-      price: Number(item.price || 0),
-      specs: specs || '',
-      qty: 1
-    });
-  }
-
-  persistCart();
-  updateCartUI();
-}
-
-function cartDecByProductId(id) {
-  // 点单页的减号：按“最后添加的那条规格行”减 1（避免你在点单页还要选择规格）
-  for (let i = cart.length - 1; i >= 0; i--) {
-    if (cart[i].id === id) {
-      cart[i].qty -= 1;
-      if (cart[i].qty <= 0) cart.splice(i, 1);
-      persistCart();
-      updateCartUI();
-      return;
+    function initTelegram() {
+      if (!APP.telegram) return;
+      APP.telegram.ready();
+      APP.telegram.expand();
+      APP.telegram.setHeaderColor('#fef3c7');
+      APP.telegram.setBackgroundColor('#f8f5ef');
     }
-  }
-}
 
-function cartIncByProductIdIfNoSpecs(item) {
-  // 小吃：无规格，直接加
-  cartInc(item, '');
-}
+    function buttonClass(active) {
+      return active
+        ? 'px-3 py-1.5 rounded-full bg-amber-500 text-white text-sm whitespace-nowrap'
+        : 'px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 text-sm whitespace-nowrap';
+    }
 
-function getQtyByProductId(id) {
-  return cart.reduce((sum, x) => sum + (x.id === id ? x.qty : 0), 0);
-}
-        function updateCartUI() {
-  const count = cart.reduce((sum, x) => sum + Number(x.qty || 0), 0);
-  const total = cart.reduce((sum, x) => sum + Number(x.qty || 0) * Number(x.price || 0), 0);
+    function chipClass(active) {
+      return active
+        ? 'px-3 py-1.5 rounded-full bg-amber-500 text-white text-sm'
+        : 'px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-sm';
+    }
 
-  const countEl = document.getElementById('cart-count');
-  const totalEl = document.getElementById('cart-total');
-  if (countEl) countEl.innerText = count;
-  if (totalEl) totalEl.innerText = total;
+    function renderCategories() {
+      const wrap = document.getElementById('categoryTabs');
+      wrap.innerHTML = APP.data.categories.map(cat => `
+        <button class="${buttonClass(APP.state.activeCategory === cat.id)}" onclick="setCategory('${cat.id}')">${cat.name}</button>
+      `).join('');
+    }
 
-  const preview = document.getElementById('cart-preview');
-  if (!preview) return;
-
-  // ✅ 核心：在购物车页，不显示“去结算”浮条
-  const cartPage = document.getElementById('page-cart');
-  const isOnCartPage = cartPage && !cartPage.classList.contains('hidden');
-  if (isOnCartPage) {
-    preview.classList.add('hidden');
-    return;
-  }
-
-  // 其他页面：有商品才显示
-  if (count > 0) preview.classList.remove('hidden');
-  else preview.classList.add('hidden');
-}
-        // ====== Cart Page + line inc/dec (必须是全局函数) ======
-        
-function renderCartPage() {
-  const listCont = document.getElementById('cart-items-list');
-  if (!listCont) return;
-
-  if (!cart || cart.length === 0) {
-    listCont.innerHTML = `
-      <div class="text-center py-16">
-        <p class="text-gray-400 mb-4">清单是空的</p>
-        <button onclick="switchTab('order')" class="px-5 py-3 bg-yellow-400 rounded-xl font-bold">
-          去点单
+    function renderProducts() {
+      const list = document.getElementById('productList');
+      const products = APP.data.products.filter(p => p.category === APP.state.activeCategory);
+      list.innerHTML = products.map(p => `
+        <button onclick="openProductModal('${p.id}')" class="text-left bg-white border border-slate-100 rounded-2xl p-3 shadow-sm">
+          <div class="aspect-square rounded-xl bg-amber-50 mb-3 flex items-center justify-center text-4xl">🧋</div>
+          <div class="font-semibold text-sm line-clamp-2">${p.name}</div>
+          <div class="text-xs text-slate-500 mt-1 line-clamp-2">${p.desc}</div>
+          <div class="mt-2 text-amber-600 font-bold">${peso(p.price)}</div>
         </button>
-      </div>
-    `;
-    return;
-  }
+      `).join('');
+    }
 
-  const total = cart.reduce((sum, x) => sum + Number(x.qty || 0) * Number(x.price || 0), 0);
+    function setCategory(id) {
+      APP.state.activeCategory = id;
+      renderCategories();
+      renderProducts();
+    }
 
-  listCont.innerHTML = `
-    <div class="space-y-3">
-      ${cart.map((line, index) => {
-        const lineTotal = Number(line.qty || 0) * Number(line.price || 0);
+    function openProductModal(productId) {
+      const product = APP.data.products.find(p => p.id === productId);
+      APP.state.currentProduct = product;
+      APP.state.currentQty = 1;
+      APP.state.currentSugar = '100%';
+      APP.state.currentIce = '正常冰';
+      APP.state.currentToppings = [];
 
-        const item = menuData.find(i => i.id === line.id);
-        const canEditSpecs = !!(item && DRINK_CATEGORIES.includes(item.category));
+      document.getElementById('modalName').textContent = product.name;
+      document.getElementById('modalPrice').textContent = peso(product.price);
+      document.getElementById('qtyValue').textContent = APP.state.currentQty;
 
-        const editBtnHtml = canEditSpecs
-          ? `<button onclick="editCartLineSpecs(${index})" class="px-3 py-1.5 text-xs border rounded-lg">改规格</button>`
-          : '';
+      renderSugarOptions();
+      renderIceOptions();
+      renderToppings();
 
+      document.getElementById('productModal').classList.remove('hidden');
+    }
+
+    function closeProductModal() {
+      document.getElementById('productModal').classList.add('hidden');
+    }
+
+    function renderSugarOptions() {
+      const box = document.getElementById('sugarOptions');
+      box.innerHTML = APP.options.sugar.map(item => `
+        <button class="${chipClass(APP.state.currentSugar === item)}" onclick="selectSugar('${item}')">${item}</button>
+      `).join('');
+    }
+
+    function renderIceOptions() {
+      const box = document.getElementById('iceOptions');
+      box.innerHTML = APP.options.ice.map(item => `
+        <button class="${chipClass(APP.state.currentIce === item)}" onclick="selectIce('${item}')">${item}</button>
+      `).join('');
+    }
+
+    function renderToppings() {
+      const box = document.getElementById('toppingOptions');
+      box.innerHTML = APP.options.toppings.map(item => {
+        const active = APP.state.currentToppings.includes(item.name);
         return `
-          <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-            <div class="flex justify-between items-start gap-3">
-              <div class="flex-1 min-w-0">
-                <div class="font-bold text-gray-900 text-sm">${line.name}</div>
+          <button class="${chipClass(active)}" onclick="toggleTopping('${item.name}')">${item.name} +${item.price}</button>
+        `;
+      }).join('');
+    }
 
-                ${line.specs ? `
-                  <div class="text-[11px] text-orange-500 font-bold mt-1">
-                    ${line.specs}
-                  </div>
-                ` : ''}
+    function selectSugar(v) {
+      APP.state.currentSugar = v;
+      renderSugarOptions();
+    }
 
-                <div class="text-[11px] text-gray-400 mt-1">
-                  单价：₱ ${line.price}
-                </div>
+    function selectIce(v) {
+      APP.state.currentIce = v;
+      renderIceOptions();
+    }
 
-                <div class="flex gap-2 mt-3">
-                  ${editBtnHtml}
-                  <button onclick="removeCartLine(${index})" class="px-3 py-1.5 text-xs border rounded-lg text-red-500 border-red-200">
-                    删除
-                  </button>
-                </div>
+    function toggleTopping(name) {
+      const idx = APP.state.currentToppings.indexOf(name);
+      if (idx >= 0) APP.state.currentToppings.splice(idx, 1);
+      else APP.state.currentToppings.push(name);
+      renderToppings();
+    }
+
+    function getToppingPrice(names) {
+      return names.reduce((sum, name) => {
+        const t = APP.options.toppings.find(x => x.name === name);
+        return sum + (t ? t.price : 0);
+      }, 0);
+    }
+
+    function addCurrentToCart() {
+      const p = APP.state.currentProduct;
+      if (!p) return;
+      const item = {
+        id: `cart_${Date.now()}`,
+        productId: p.id,
+        name: p.name,
+        basePrice: p.price,
+        sugar: APP.state.currentSugar,
+        ice: APP.state.currentIce,
+        toppings: [...APP.state.currentToppings],
+        qty: APP.state.currentQty
+      };
+      APP.state.cart.push(item);
+      renderCartBadge();
+      closeProductModal();
+    }
+
+    function renderCartBadge() {
+      const totalQty = APP.state.cart.reduce((sum, item) => sum + item.qty, 0);
+      document.getElementById('cartCount').textContent = totalQty;
+    }
+
+    function openCart() {
+      renderCart();
+      document.getElementById('cartDrawer').classList.remove('hidden');
+    }
+
+    function closeCart() {
+      document.getElementById('cartDrawer').classList.add('hidden');
+    }
+
+    function getItemUnitPrice(item) {
+      return item.basePrice + getToppingPrice(item.toppings);
+    }
+
+    function getCartTotal() {
+      return APP.state.cart.reduce((sum, item) => sum + getItemUnitPrice(item) * item.qty, 0);
+    }
+
+    function renderCart() {
+      const box = document.getElementById('cartItems');
+      if (!APP.state.cart.length) {
+        box.innerHTML = '<div class="text-sm text-slate-500 text-center py-10">购物车还是空的</div>';
+      } else {
+        box.innerHTML = APP.state.cart.map(item => `
+          <div class="border rounded-2xl p-3">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="font-semibold">${item.name}</div>
+                <div class="text-xs text-slate-500 mt-1">甜度 ${item.sugar} · 冰度 ${item.ice}</div>
+                <div class="text-xs text-slate-500 mt-1">加料：${item.toppings.length ? item.toppings.join('、') : '无'}</div>
+                <div class="text-sm text-amber-600 font-semibold mt-2">${peso(getItemUnitPrice(item))}</div>
               </div>
-
-              <div class="text-right shrink-0">
-                <div class="text-orange-500 font-black text-sm">₱ ${lineTotal}</div>
-                <div class="flex items-center gap-2 mt-3 justify-end">
-                  <button onclick="cartLineDec(${index})" class="w-8 h-8 rounded-full border font-bold">-</button>
-                  <span class="w-6 text-center font-bold">${line.qty}</span>
-                  <button onclick="cartLineInc(${index})" class="w-8 h-8 rounded-full bg-yellow-400 font-bold">+</button>
-                </div>
+              <div class="flex items-center gap-2">
+                <button class="w-8 h-8 rounded-full bg-slate-100" onclick="changeCartQty('${item.id}', -1)">-</button>
+                <span class="w-5 text-center">${item.qty}</span>
+                <button class="w-8 h-8 rounded-full bg-slate-100" onclick="changeCartQty('${item.id}', 1)">+</button>
               </div>
             </div>
           </div>
-        `;
-      }).join('')}
-    </div>
-
-    <div class="mt-5">
-      <button onclick="switchTab('order')" class="w-full border-2 border-dashed border-yellow-300 rounded-2xl py-4 font-bold text-gray-700 bg-yellow-50">
-        + 继续添加商品
-      </button>
-    </div>
-
-    <div class="mt-6 p-5 bg-yellow-50 rounded-2xl border border-yellow-100">
-      <div class="flex justify-between items-center mb-4">
-        <span class="font-bold text-gray-800 text-base">合计金额</span>
-        <span class="font-black text-lg text-orange-500">₱ ${total}</span>
-      </div>
-
-      <button onclick="submitOrder().catch(e => { console.error(e); alert('submitOrder 报错：' + e.message); })"
-        class="w-full bg-gray-900 text-white py-4 rounded-xl font-bold">
-        立即下单支付
-      </button>
-    </div>
-  `;
-}
-
-function cartLineInc(index) {
-  if (!cart[index]) return;
-  cart[index].qty = Number(cart[index].qty || 0) + 1;
-  persistCart();
-  updateCartUI();
-  renderCartPage();
-  if (typeof renderOrderPage === 'function') renderOrderPage();
-}
-
-function cartLineDec(index) {
-  if (!cart[index]) return;
-  cart[index].qty = Number(cart[index].qty || 0) - 1;
-  if (cart[index].qty <= 0) cart.splice(index, 1);
-  persistCart();
-  updateCartUI();
-  renderCartPage();
-  if (typeof renderOrderPage === 'function') renderOrderPage();
-}
-        // =========================
-// 干净版：状态 / 配置 / 语言 / 弹窗 / 下单
-// （替换掉 switchTab('home') 后面那一坨重复逻辑）
-// =========================
-
-// Telegram WebApp 初始化（普通浏览器也能跑）
-const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
-if (tg) {
-    try {
-        tg.ready();
-        tg.expand();
-    } catch (e) {
-        console.warn('Telegram WebApp init warning:', e);
+        `).join('');
+      }
+      document.getElementById('cartTotal').textContent = peso(getCartTotal());
     }
-}
 
-// ---- 配置：后端接口（先留空，没后端时会自动走 Telegram / mock）----
-const APP_CONFIG = {
-    API_BASE: '', // 例如: 'http://localhost:3000/api'
-    USE_BACKEND: false // 后端准备好后改成 true
-};
-
-// ---- 全局状态 ----
-let appLang = 'zh'; // 用户端语言（zh / en）
-// 这里假设你前面已经保留了 let cart = [];
-// 这里假设你前面已经保留了 let currentItem = null;
-
-// ---- 文案字典（先做核心流程文案）----
-const I18N = {
-    zh: {
-        pickupBtn: '取单号',
-        cartEmpty: '清单是空的',
-        totalLabel: '合计金额',
-        checkoutNow: '立即下单支付',
-        addToList: '加入清单',
-        added: '已加入清单',
-        cartEmptyAlert: '您的清单还是空的哦',
-        submitSuccess: '订单已提交',
-        submitFail: '提交失败，请稍后再试',
-        openInTelegram: '请在 Telegram 中打开此页面',
-        specSugar: '甜度',
-        specIce: '冰度'
-    },
-    en: {
-        pickupBtn: 'Pickup',
-        cartEmpty: 'Your cart is empty',
-        totalLabel: 'Total',
-        checkoutNow: 'Place Order',
-        addToList: 'Add to Cart',
-        added: 'Added to cart',
-        cartEmptyAlert: 'Your cart is empty',
-        submitSuccess: 'Order submitted',
-        submitFail: 'Submit failed. Please try again.',
-        openInTelegram: 'Please open this page in Telegram',
-        specSugar: 'Sugar',
-        specIce: 'Ice'
+    function changeCartQty(id, delta) {
+      const item = APP.state.cart.find(x => x.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) {
+        APP.state.cart = APP.state.cart.filter(x => x.id !== id);
+      }
+      renderCart();
+      renderCartBadge();
     }
-};
 
-function t(key) {
-    return (I18N[appLang] && I18N[appLang][key]) || key;
-}
-function notify(msg) {
-  // 只有在 Telegram 环境、且 initData 存在时才认为可用
-  const inTelegram = tg && typeof tg === 'object' && !!tg.initData;
-
-  if (inTelegram) {
-    // 1) 先尝试 showPopup（但可能“存在函数却不支持”，会抛 WebAppMethodUnsupported）
-    if (typeof tg.showPopup === 'function') {
-      try {
-        tg.showPopup({ message: msg, buttons: [{ type: 'ok' }] });
+    function openCheckout() {
+      if (!APP.state.cart.length) {
+        alert('请先添加商品');
         return;
-      } catch (e) {
-        // ignore and fallback
       }
+      closeCart();
+      renderCheckoutSummary();
+      document.getElementById('checkoutDrawer').classList.remove('hidden');
     }
 
-    // 2) 再退化到 showAlert（兼容性更好）
-    if (typeof tg.showAlert === 'function') {
-      try {
-        tg.showAlert(msg);
-        return;
-      } catch (e) {
-        // ignore and fallback
-      }
-    }
-  }
-
-  // 3) 最后兜底
-  alert(msg);
-}
-        
-// ---- 本地 menuData 兼容双语字段（先做占位，后端接入后会覆盖真实英文）----
-function ensureMenuBilingualFields() {
-    menuData.forEach(item => {
-        if (!item.name_zh) item.name_zh = item.name;
-        if (!item.name_en) item.name_en = item.name; // 先占位，后端返回真实英文时会替换
-        if (!item.desc_zh) item.desc_zh = item.desc || '';
-        if (!item.desc_en) item.desc_en = item.desc || '';
-        // 保留 category 作为系统内部字段（不要随语言切换改掉）
-        if (!item.category_zh) item.category_zh = item.category;
-        if (!item.category_en) item.category_en = item.category; // 后端可返回真实英文分类
-    });
-}
-
-// 用于不改你现有 renderOrderPage() 的情况下，直接切换显示名称
-function syncMenuDisplayByLang() {
-    menuData.forEach(item => {
-        item.name = appLang === 'en' ? (item.name_en || item.name_zh) : (item.name_zh || item.name);
-        item.desc = appLang === 'en' ? (item.desc_en || item.desc_zh) : (item.desc_zh || item.desc || '');
-        // category 不动（避免滚动锚点/逻辑炸）
-    });
-}
-
-function updateLangButtonsUI() {
-    const zhBtn = document.getElementById('lang-btn-zh');
-    const enBtn = document.getElementById('lang-btn-en');
-    if (zhBtn && enBtn) {
-        if (appLang === 'zh') {
-            zhBtn.className = 'px-2 py-1 text-[10px] rounded-full bg-white font-bold shadow-sm';
-            enBtn.className = 'px-2 py-1 text-[10px] rounded-full text-gray-500';
-        } else {
-            enBtn.className = 'px-2 py-1 text-[10px] rounded-full bg-white font-bold shadow-sm';
-            zhBtn.className = 'px-2 py-1 text-[10px] rounded-full text-gray-500';
-        }
-    }
-}
-
-function applyLanguageToStaticUI() {
-    const pickupBtn = document.getElementById('pickup-btn');
-    if (pickupBtn) pickupBtn.innerText = t('pickupBtn');
-
-    // 底部导航（先做基础项，避免全部改一遍 HTML）
-    const tabTexts = {
-        home: appLang === 'zh' ? '首页' : 'Home',
-        order: appLang === 'zh' ? '点单' : 'Order',
-        pickup: appLang === 'zh' ? '取单' : 'Pickup',
-        cart: appLang === 'zh' ? '清单' : 'Cart',
-        me: appLang === 'zh' ? '我的' : 'Me'
-    };
-
-    Object.keys(tabTexts).forEach(tab => {
-        const btn = document.getElementById(`tab-${tab}`);
-        if (!btn) return;
-        const spans = btn.querySelectorAll('span');
-        if (spans[1]) spans[1].innerText = tabTexts[tab];
-    });
-
-    // 规格弹窗按钮文本（只改标题，不改选项值本身，避免逻辑复杂）
-    const sugarTitle = document.querySelector('#sugar-options')?.previousElementSibling;
-    const iceTitle = document.querySelector('#ice-options')?.previousElementSibling;
-    if (sugarTitle) sugarTitle.innerText = t('specSugar');
-    if (iceTitle) iceTitle.innerText = t('specIce');
-
-    const addBtn = document.querySelector('#spec-modal button[onclick="confirmAddToCart()"]');
-    if (addBtn) addBtn.innerText = t('addToList');
-}
-
-function rerenderCurrentPageForLanguage() {
-    // 切语言后，重新刷新动态内容
-    syncMenuDisplayByLang();
-
-    if (typeof renderOrderPage === 'function') {
-        renderOrderPage();
-    }
-    if (typeof renderCartPage === 'function') {
-        renderCartPage();
+    function closeCheckout() {
+      document.getElementById('checkoutDrawer').classList.add('hidden');
     }
 
-    // 如果规格弹窗当前开着，更新弹窗商品名称
-    if (currentItem) {
-        const latest = menuData.find(i => i.id === currentItem.id);
-        if (latest) currentItem = latest;
-        const modalName = document.getElementById('modal-name');
-        if (modalName && currentItem) {
-            modalName.innerText = `${currentItem.id} | ${currentItem.name}`;
-        }
-    }
-}
-
-function switchLang(lang) {
-    if (!['zh', 'en'].includes(lang)) return;
-    appLang = lang;
-    localStorage.setItem('appLang', appLang);
-    updateLangButtonsUI();
-    applyLanguageToStaticUI();
-    rerenderCurrentPageForLanguage();
-}
-
-// ---- 规格弹窗逻辑（只保留这一版）----
-function resetSpecs() {
-    const allBtns = document.querySelectorAll('#spec-modal .spec-btn');
-    allBtns.forEach(btn => {
-        btn.classList.remove('active', 'bg-orange-50', 'text-orange-500', 'border-orange-500');
-        btn.classList.add('bg-gray-50', 'text-gray-500', 'border-transparent');
-    });
-
-    // 默认选项：全糖 / 正常冰（如果按钮存在）
-    const defaults = ['全糖', '正常冰'];
-    allBtns.forEach(btn => {
-        const txt = btn.innerText.trim();
-        if (defaults.some(d => txt.includes(d))) {
-            btn.classList.add('active', 'bg-orange-50', 'text-orange-500', 'border-orange-500');
-            btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-transparent');
-        }
-    });
-}
-
-function openSpecs(id) {
-    currentItem = menuData.find(i => i.id === id);
-    if (!currentItem) return;
-
-    resetSpecs();
-
-    const modalName = document.getElementById('modal-name');
-    const modalPrice = document.getElementById('modal-price');
-    const modalIcon = document.getElementById('modal-icon');
-
-    if (modalName) modalName.innerText = `${currentItem.id} | ${currentItem.name}`;
-    if (modalPrice) modalPrice.innerText = `₱ ${currentItem.price}`;
-    if (modalIcon) modalIcon.innerText = currentItem.icon || '🥤';
-
-    document.getElementById('spec-modal').classList.remove('hidden');
-}
-
-function closeModal() {
-  const modal = document.getElementById('spec-modal');
-  if (modal) modal.classList.add('hidden');
-  window.__editingCartLineIndex = null;
-}
-
-function selectSpec(btn, group) {
-    // 每组独立切换（杯型/甜度/冰度各自独立）
-    const parent = btn.parentElement;
-    parent.querySelectorAll('button').forEach(b => {
-        b.classList.remove('active', 'bg-orange-50', 'text-orange-500', 'border-orange-500');
-        b.classList.add('bg-gray-50', 'text-gray-500', 'border-transparent');
-    });
-
-    btn.classList.add('active', 'bg-orange-50', 'text-orange-500', 'border-orange-500');
-    btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-transparent');
-}
-function handleAddClick(id) {
-  const item = menuData.find(i => i.id === id);
-  if (!item) return;
-
-  // 小吃：无规格直接加
-  if (!DRINK_CATEGORIES.includes(item.category)) {
-    cartIncByProductIdIfNoSpecs(item);
-    renderOrderPage(); // 让数量立刻刷新
-    return;
-  }
-
-  // 饮品：开规格弹窗
-  openSpecs(id);
-}
-function orderMinus(id) {
-  cartDecByProductId(id); // 你已有的按商品ID减数量
-  renderOrderPage();
-  if (typeof renderCartPage === 'function') renderCartPage();
-}
-function addToCartDirect(item) {
-  const snapshot = {
-    ...item,
-    cartId: `${item.id}_${Date.now()}`,
-    specs: '' // 小吃无规格
-  };
-  cart.push(snapshot);
-  persistCart();
-  updateCartUI();
-}
-    
-// 你当前哪些分类属于饮品（需要规格）
-const DRINK_CATEGORIES = ['奶盖系列', '店长推荐', '果茶系列', '鲜榨果汁'];
-
-function confirmAddToCart() {
-  if (!currentItem) return;
-
-  let finalSpecs = '';
-
-  if (DRINK_CATEGORIES.includes(currentItem.category)) {
-    const activeButtons = document.querySelectorAll('#spec-modal .spec-btn.active');
-    finalSpecs = [...activeButtons]
-      .map(btn => btn.innerText.split('(')[0].trim())
-      .join(' / ');
-  }
-
-  const editingIndex = window.__editingCartLineIndex;
-
-  if (editingIndex !== undefined && editingIndex !== null && cart[editingIndex]) {
-    const oldLine = cart[editingIndex];
-
-    cart[editingIndex] = {
-      ...oldLine,
-      specs: finalSpecs
-    };
-
-    persistCart();
-    updateCartUI();
-    renderCartPage();
-    if (typeof renderOrderPage === 'function') renderOrderPage();
-
-    window.__editingCartLineIndex = null;
-    closeModal();
-    return;
-  }
-
-  cartInc(currentItem, finalSpecs);
-
-  updateCartUI();
-  renderOrderPage();
-  renderCartPage();
-
-  closeModal();
-}
-function removeCartLine(index) {
-  if (!cart[index]) return;
-
-  cart.splice(index, 1);
-  persistCart();
-  updateCartUI();
-  renderCartPage();
-  if (typeof renderOrderPage === 'function') renderOrderPage();
-}
-
-function editCartLineSpecs(index) {
-  const line = cart[index];
-  if (!line) return;
-
-  const item = menuData.find(i => i.id === line.id);
-  if (!item) {
-    alert('找不到商品数据，无法修改规格');
-    return;
-  }
-
-  if (!DRINK_CATEGORIES.includes(item.category)) {
-    alert('该商品没有可修改规格');
-    return;
-  }
-
-  currentItem = item;
-  openSpecs(item.id);
-  window.__editingCartLineIndex = index;
-
-  setTimeout(() => {
-    const specs = (line.specs || '').split('/').map(s => s.trim()).filter(Boolean);
-    if (!specs.length) return;
-
-    document.querySelectorAll('#spec-modal .spec-btn').forEach(btn => {
-      const txt = btn.innerText.split('(')[0].trim();
-
-      if (specs.includes(txt)) {
-        btn.classList.add('active', 'bg-orange-50', 'text-orange-500', 'border-orange-500');
-        btn.classList.remove('bg-gray-50', 'text-gray-500', 'border-transparent');
-      } else {
-        btn.classList.remove('active', 'bg-orange-50', 'text-orange-500', 'border-orange-500');
-        btn.classList.add('bg-gray-50', 'text-gray-500', 'border-transparent');
-      }
-    });
-  }, 50);
-}
-
-window.removeCartLine = removeCartLine;
-window.editCartLineSpecs = editCartLineSpecs;
-
-// ---- 订单构造（给后端 / Telegram 同时使用）----
-function buildOrderPayload() {
-  const address = APP.STORE.loadAddress() || {};
-  const total = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
-
-  return {
-    source: 'telegram_mini_app',
-    customerLang: appLang,
-    customer: {
-      name: address.name || '',
-      phone: address.phone || '',
-      address: address.addr || '',
-      note: address.note || ''
-    },
-    items: cart.map((item, idx) => ({
-      lineNo: idx + 1,
-      productId: item.id,
-      productNameZh: item.product_name_zh_snapshot || item.name_zh || item.name,
-      productNameEn: item.product_name_en_snapshot || item.name_en || item.name,
-      specs: item.specs || '',
-      unitPrice: Number(item.price || 0),
-      quantity: Number(item.qty || 1),
-      lineTotal: Number(item.price || 0) * Number(item.qty || 1)
-    })),
-    subtotal: total,
-    total,
-    currency: 'PHP',
-    paymentMethod: 'pay_at_store',
-    paymentStatus: 'unpaid',
-    status: 'pending',
-    createdAt: new Date().toISOString()
-  };
-}
-
-// ---- 提交订单：优先后端，失败则回退 Telegram ----
-
-async function submitOrder() {
-  if (!cart || cart.length === 0) {
-    notify('购物车是空的');
-    return;
-  }
-
-  const payload = buildOrderPayload();
-  const address = APP.STORE.loadAddress();
-
-  if (!address || !address.name || !address.phone || !address.addr) {
-    alert('请先在【我的 → 收货地址】填写信息，再下单');
-    switchTab('me');
-    setTimeout(() => openAddressModal(), 300);
-    return;
-  }
-
-  // =========================
-// Checkout Confirm Modal + Submit Order
-// 完整替代版
-// =========================
-
-// 统一订单状态文本
-const STATUS_TEXT = {
-  pending: '已下单',
-  accepted: '已接单',
-  preparing: '制作中',
-  ready: '可取单',
-  completed: '已完成',
-  cancelled: '已取消'
-};
-
-// ---- 打开下单确认弹窗 ----
-function openCheckoutConfirmModal(payload) {
-  if (!payload) return;
-
-  window.__pendingOrderPayload = payload;
-
-  const customer = payload.customer || {};
-  const items = payload.items || [];
-  const total = Number(payload.total || 0);
-
-  const itemsHtml = items.map(item => `
-    <div class="flex justify-between items-start py-2 border-b border-gray-100">
-      <div class="pr-3">
-        <div class="font-semibold text-sm">${item.productNameZh || item.productId || '商品'}</div>
-        ${item.specs ? `<div class="text-[11px] text-orange-500 mt-1">${item.specs}</div>` : ''}
-      </div>
-      <div class="text-right shrink-0">
-        <div class="text-sm">x${item.quantity || 1}</div>
-        <div class="text-xs text-gray-400">₱ ${item.lineTotal || 0}</div>
-      </div>
-    </div>
-  `).join('');
-
-  const html = `
-    <div id="checkout-confirm-modal" class="fixed inset-0 bg-black/50 z-[140] flex items-end">
-      <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up max-h-[85vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <div class="font-black text-lg text-gray-900">确认订单信息</div>
-          <button type="button" onclick="closeCheckoutConfirmModal()" class="text-gray-400 text-2xl">✕</button>
-        </div>
-
-        <div class="bg-gray-50 rounded-2xl p-4 mb-4">
-          <div class="flex items-center justify-between mb-3">
-            <div class="font-bold text-sm">收货信息</div>
-            <button type="button" onclick="goEditAddressFromCheckout()" class="text-xs text-orange-500 font-bold">
-              修改地址
-            </button>
+    function renderCheckoutSummary() {
+      const box = document.getElementById('checkoutSummary');
+      box.innerHTML = APP.state.cart.map(item => `
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div>${item.name} × ${item.qty}</div>
+            <div class="text-slate-500 text-xs">${item.sugar} / ${item.ice}${item.toppings.length ? ' / ' + item.toppings.join('、') : ''}</div>
           </div>
-
-          <div class="space-y-2 text-sm">
-            <div><span class="text-gray-400">收货人：</span><span class="font-semibold">${customer.name || '-'}</span></div>
-            <div><span class="text-gray-400">联系电话：</span><span class="font-semibold">${customer.phone || '-'}</span></div>
-            <div><span class="text-gray-400">收货地址：</span><span class="font-semibold">${customer.address || '-'}</span></div>
-            <div><span class="text-gray-400">备注：</span><span class="font-semibold">${customer.note || '无'}</span></div>
-          </div>
+          <div class="font-medium">${peso(getItemUnitPrice(item) * item.qty)}</div>
         </div>
-
-        <div class="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-          <div class="font-bold text-sm mb-3">订单商品</div>
-          <div class="space-y-1">
-            ${itemsHtml || '<div class="text-sm text-gray-400">暂无商品</div>'}
-          </div>
-        </div>
-
-        <div class="bg-yellow-50 rounded-2xl p-4 border border-yellow-100 mb-4">
-          <div class="flex justify-between items-center">
-            <span class="font-bold text-gray-800">合计金额</span>
-            <span class="font-black text-lg text-orange-500">₱ ${total}</span>
-          </div>
-        </div>
-
-        <label class="flex items-start gap-2 mb-5">
-          <input id="confirm-address-check" type="checkbox" class="mt-1" onchange="toggleCheckoutConfirmBtn()">
-          <span class="text-xs text-gray-600">我已确认以上收货人、电话、地址和订单信息准确无误</span>
-        </label>
-
-        <div class="flex gap-3">
-          <button type="button" onclick="closeCheckoutConfirmModal()" class="flex-1 border rounded-xl py-3 font-bold">
-            返回修改
-          </button>
-          <button
-            id="checkout-confirm-btn"
-            type="button"
-            onclick="confirmSubmitOrder()"
-            disabled
-            class="flex-1 rounded-xl py-3 font-bold bg-gray-300 text-white cursor-not-allowed"
-          >
-            确认下单
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const old = document.getElementById('checkout-confirm-modal');
-  if (old) old.remove();
-
-  document.body.insertAdjacentHTML('beforeend', html);
-  document.body.style.overflow = 'hidden';
-}
-
-// ---- 关闭确认弹窗 ----
-function closeCheckoutConfirmModal() {
-  const modal = document.getElementById('checkout-confirm-modal');
-  if (modal) modal.remove();
-  document.body.style.overflow = '';
-  window.__pendingOrderPayload = null;
-}
-
-// ---- 勾选确认后启用按钮 ----
-function toggleCheckoutConfirmBtn() {
-  const checked = !!document.getElementById('confirm-address-check')?.checked;
-  const btn = document.getElementById('checkout-confirm-btn');
-  if (!btn) return;
-
-  if (checked) {
-    btn.disabled = false;
-    btn.className = 'flex-1 rounded-xl py-3 font-bold bg-yellow-400 text-black';
-  } else {
-    btn.disabled = true;
-    btn.className = 'flex-1 rounded-xl py-3 font-bold bg-gray-300 text-white cursor-not-allowed';
-  }
-}
-
-// ---- 从确认弹窗跳去修改地址 ----
-let checkoutFlowState = {
-  editingAddressFromCheckout: false
-};
-
-function goEditAddressFromCheckout() {
-  checkoutFlowState.editingAddressFromCheckout = true;
-
-  closeCheckoutConfirmModal();
-
-  setTimeout(() => {
-    if (typeof openAddressModal === 'function') {
-      openAddressModal({ fromCheckout: true });
-    }
-  }, 100);
-}
-
-// ---- 真正执行提交订单 ----
-async function reallySubmitOrder(payload) {
-  if (!payload) throw new Error('payload is empty');
-
-  // 1) 优先走后端
-  if (APP_CONFIG && APP_CONFIG.USE_BACKEND && APP_CONFIG.API_BASE) {
-    const res = await fetch(`${APP_CONFIG.API_BASE}/orders`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new Error(`HTTP ${res.status}: ${text}`);
-    }
-
-    let data = {};
-    try {
-      data = await res.json();
-    } catch (e) {}
-
-    const orderNo = data.orderNo || ('TY' + Date.now().toString().slice(-6));
-
-    addOrderRecord({
-      orderNo,
-      payload: {
-        ...payload,
-        status: 'pending'
-      }
-    });
-
-    notify('下单成功！订单号：' + orderNo);
-
-    cart = [];
-    persistCart();
-    updateCartUI();
-    renderCartPage();
-    if (typeof renderOrderPage === 'function') renderOrderPage();
-
-    switchTab('pickup');
-    if (typeof renderPickupPage === 'function') renderPickupPage();
-    return;
-  }
-
-  // 2) 没后端时：Telegram 环境则发给 bot；非 Telegram 环境则只做本地 MVP
-  let sent = false;
-  if (typeof sendOrderToTelegram === 'function') {
-    sent = sendOrderToTelegram(payload) === true;
-  }
-
-  const orderNo = 'TY' + Date.now().toString().slice(-6);
-
-  addOrderRecord({
-    orderNo,
-    payload: {
-      ...payload,
-      status: 'pending'
-    }
-  });
-
-  if (sent) {
-    notify('订单已发送！订单号：' + orderNo);
-  } else {
-    notify('当前不是 Telegram 环境，已保存本地测试订单。订单号：' + orderNo);
-  }
-
-  cart = [];
-  persistCart();
-  updateCartUI();
-  renderCartPage();
-  if (typeof renderOrderPage === 'function') renderOrderPage();
-
-  switchTab('pickup');
-  if (typeof renderPickupPage === 'function') renderPickupPage();
-}
-
-// ---- 点击确认下单 ----
-async function confirmSubmitOrder() {
-  const btn = document.getElementById('checkout-confirm-btn');
-  if (!btn || btn.disabled) return;
-
-  const payload = window.__pendingOrderPayload;
-  if (!payload) {
-    alert('订单数据不存在，请重新下单');
-    return;
-  }
-
-  try {
-    btn.disabled = true;
-    btn.innerText = '提交中...';
-    btn.className = 'flex-1 rounded-xl py-3 font-bold bg-gray-400 text-white';
-
-    await reallySubmitOrder(payload);
-    closeCheckoutConfirmModal();
-  } catch (e) {
-    console.error('confirmSubmitOrder error:', e);
-    alert('确认下单报错：' + e.message);
-
-    btn.disabled = false;
-    btn.innerText = '确认下单';
-    btn.className = 'flex-1 rounded-xl py-3 font-bold bg-yellow-400 text-black';
-  }
-}
-
-// ---- 入口：点击“立即下单支付”时先弹确认框 ----
-async function submitOrder() {
-  if (!cart || cart.length === 0) {
-    notify('购物车是空的');
-    return;
-  }
-
-  const address = APP.STORE.loadAddress();
-  if (!address || !address.name || !address.phone || !address.addr) {
-    alert('请先在【我的 → 收货地址】填写信息，再下单');
-    switchTab('me');
-    setTimeout(() => {
-      if (typeof openAddressModal === 'function') {
-        openAddressModal();
-      }
-    }, 300);
-    return;
-  }
-
-  const payload = buildOrderPayload();
-
-  // 这里只打开确认弹窗，不直接提交
-  openCheckoutConfirmModal(payload);
-}
-
-// ---- 挂到全局给 onclick 使用 ----
-window.submitOrder = submitOrder;
-window.openCheckoutConfirmModal = openCheckoutConfirmModal;
-window.closeCheckoutConfirmModal = closeCheckoutConfirmModal;
-window.toggleCheckoutConfirmBtn = toggleCheckoutConfirmBtn;
-window.goEditAddressFromCheckout = goEditAddressFromCheckout;
-window.confirmSubmitOrder = confirmSubmitOrder;
-  sendOrderToTelegram(payload);
-
-  const orderNo = 'TY' + Date.now().toString().slice(-6);
-  addOrderRecord({ orderNo, payload });
-
-  notify('已发送订单（MVP）！订单号：' + orderNo);
-
-  cart = [];
-  persistCart();
-  updateCartUI();
-  renderCartPage();
-  switchTab('pickup');
-  renderPickupPage();
-}
-
-window.closeCheckoutConfirmModal = closeCheckoutConfirmModal;
-window.confirmSubmitOrder = confirmSubmitOrder;    
-
-
-
-
-
-
-
-// =========================
-// Pickup Page: Orders (LocalStorage MVP)
-// =========================
-const ORDER_KEY = 'tiktalk_orders_v1';
-
-function loadOrders() {
-  try {
-    const arr = JSON.parse(localStorage.getItem(ORDER_KEY) || '[]');
-    return Array.isArray(arr) ? arr : [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function saveOrders(list) {
-  try { localStorage.setItem(ORDER_KEY, JSON.stringify(list || [])); } catch (e) {}
-}
-
-function addOrderRecord({ orderNo, payload }) {
-  const list = loadOrders();
-
-  // 生成一个更易读的 items
-  const items = (payload?.items || []).map(x => ({
-    productId: x.productId || x.id || '',
-    nameZh: x.productNameZh || x.name || '',
-    nameEn: x.productNameEn || '',
-    specs: x.specs || '',
-    qty: Number(x.quantity || x.qty || 1),
-    unitPrice: Number(x.unitPrice || x.price || 0),
-    lineTotal: Number(x.lineTotal || 0) || (Number(x.unitPrice || x.price || 0) * Number(x.quantity || x.qty || 1))
-  }));
-
-  const total = Number(payload?.total || payload?.subtotal || items.reduce((s, it) => s + Number(it.lineTotal || 0), 0));
-
-  list.unshift({
-    orderNo,
-    createdAt: Date.now(),
-    status: 'pending', // pending | done
-    total,
-    currency: payload?.currency || 'PHP',
-    items
-  });
-
-  saveOrders(list);
-  renderPickupPage();
-}
-
-function markOrderDone(orderNo) {
-  const list = loadOrders();
-  const target = list.find(o => o.orderNo === orderNo);
-  if (target) target.status = 'completed';
-  saveOrders(list);
-  renderPickupPage();
-}
-
-function clearOrders() {
-  saveOrders([]);
-  renderPickupPage();
-}
-
-function formatTime(ts) {
-  const d = new Date(ts);
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mm = String(d.getMinutes()).padStart(2, '0');
-  return `${hh}:${mm}`;
-}
-
-function renderPickupPage() {
-  const cont = document.getElementById('pickup-list');
-  const empty = document.getElementById('pickup-empty');
-  if (!cont || !empty) return;
-
-  const orders = loadOrders();
-
-  if (!orders.length) {
-    cont.innerHTML = '';
-    empty.classList.remove('hidden');
-    return;
-  }
-
-  empty.classList.add('hidden');
-
-  cont.innerHTML = orders.map(o => {
-    const itemsHtml = (o.items || []).slice(0, 4).map(it => {
-      const name = it.nameZh || it.productId || 'Item';
-      const spec = it.specs ? ` <span class="text-[10px] text-orange-500 font-bold">(${it.specs})</span>` : '';
-      return `
-        <div class="flex justify-between text-xs text-gray-700">
-          <div class="truncate max-w-[75%]">
-            <span class="font-semibold">${name}</span>${spec}
-          </div>
-          <div class="shrink-0">x${it.qty}</div>
+      `).join('') + `
+        <div class="pt-2 border-t flex items-center justify-between font-semibold">
+          <span>合计</span>
+          <span>${peso(getCartTotal())}</span>
         </div>
       `;
-    }).join('');
-
-    const STATUS_TEXT = {
-  pending: '已下单',
-  accepted: '已接单',
-  preparing: '制作中',
-  ready: '可取单',
-  completed: '已完成',
-  cancelled: '已取消'
-};
-
-const statusText = STATUS_TEXT[o.status] || '处理中';
-
-const statusBadge =
-  o.status === 'completed'
-    ? `<span class="text-[10px] px-2 py-1 rounded-full bg-green-50 text-green-600 font-bold">${statusText}</span>`
-    : o.status === 'ready'
-    ? `<span class="text-[10px] px-2 py-1 rounded-full bg-blue-50 text-blue-600 font-bold">${statusText}</span>`
-    : o.status === 'cancelled'
-    ? `<span class="text-[10px] px-2 py-1 rounded-full bg-red-50 text-red-600 font-bold">${statusText}</span>`
-    : `<span class="text-[10px] px-2 py-1 rounded-full bg-yellow-50 text-yellow-700 font-bold">${statusText}</span>`;
-
-    const actionBtn = '';
-
-    return `
-      <div onclick="openOrderDetailModal('${o.orderNo}')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 cursor-pointer">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <div class="font-black text-gray-900">订单号：${o.orderNo}</div>
-            <div class="text-[10px] text-gray-400 mt-1">下单时间：${formatTime(o.createdAt)}</div>
-          </div>
-          <div class="text-right">
-            ${statusBadge}
-            <div class="text-sm font-black text-orange-500 mt-2">₱ ${o.total}</div>
-          </div>
-        </div>
-
-        <div class="mt-3 space-y-1">
-          ${itemsHtml}
-          ${(o.items || []).length > 4 ? `<div class="text-[10px] text-gray-400">…还有 ${(o.items || []).length - 4} 项</div>` : ''}
-        </div>
-
-      </div>
-    `;
-  }).join('');
-}
-function openOrderDetailModal(orderNo) {
-  const orders = loadOrders();
-  const order = orders.find(o => o.orderNo === orderNo);
-  if (!order) return;
-
-  const body = document.getElementById('order-detail-body');
-  const modal = document.getElementById('order-detail-modal');
-  if (!body || !modal) return;
-
-  const itemsHtml = (order.items || []).map(it => `
-    <div class="flex justify-between items-start py-2 border-b border-gray-100">
-      <div class="pr-3">
-        <div class="font-semibold text-sm">${it.nameZh || it.productId || 'Item'}</div>
-        ${it.specs ? `<div class="text-[11px] text-orange-500 mt-1">${it.specs}</div>` : ''}
-      </div>
-      <div class="text-right shrink-0">
-        <div class="text-sm">x${it.qty}</div>
-        <div class="text-xs text-gray-400">₱ ${it.lineTotal}</div>
-      </div>
-    </div>
-  `).join('');
-
-  body.innerHTML = `
-    <div class="bg-gray-50 rounded-2xl p-4 mb-4">
-      <div class="flex justify-between items-center mb-2">
-        <span class="text-gray-500 text-sm">订单号</span>
-        <span class="font-bold">${order.orderNo}</span>
-      </div>
-      <div class="flex justify-between items-center mb-2">
-        <span class="text-gray-500 text-sm">下单时间</span>
-        <span class="text-sm">${formatTime(order.createdAt)}</span>
-      </div>
-      <div class="flex justify-between items-center">
-        <span class="text-gray-500 text-sm">状态</span>
-        <span class="text-sm font-bold ${
-  order.status === 'completed' ? 'text-green-600' :
-  order.status === 'ready' ? 'text-blue-600' :
-  order.status === 'cancelled' ? 'text-red-600' :
-  'text-yellow-600'
-}">
-  ${STATUS_TEXT[order.status] || '处理中'}
-</span>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-2xl border p-4 mb-4">
-      <div class="font-bold mb-3">商品明细</div>
-      <div class="space-y-1">
-        ${itemsHtml || '<div class="text-sm text-gray-400">暂无商品</div>'}
-      </div>
-    </div>
-
-    <div class="bg-yellow-50 rounded-2xl p-4 border border-yellow-100">
-      <div class="flex justify-between items-center text-base font-bold">
-        <span>合计</span>
-        <span class="text-orange-500">₱ ${order.total}</span>
-      </div>
-    </div>
-  `;
-
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
-}
-
-function closeOrderDetailModal() {
-  const modal = document.getElementById('order-detail-modal');
-  if (!modal) return;
-  modal.classList.add('hidden');
-  modal.classList.remove('flex');
-}
-
-window.openOrderDetailModal = openOrderDetailModal;
-window.closeOrderDetailModal = closeOrderDetailModal;
-// 让函数在 onclick="..." 中可用
-window.renderPickupPage = renderPickupPage;
-window.markOrderDone = markOrderDone;
-window.clearOrders = clearOrders;
-        
-function sendOrderToTelegram(payload) {
-  if (!payload) payload = buildOrderPayload();
-
-  // 不在 Telegram：不要假装成功，直接提示用户
-  if (!tg || !tg.initData) {
-    console.log('Mock submit payload (not in Telegram):', payload);
-    alert('当前不是 Telegram Mini App 环境：订单未发送给店员。\n请在 Telegram 中打开再下单。');
-    return false;
-  }
-
-  try {
-    tg.sendData(JSON.stringify(payload));
-    return true;
-  } catch (e) {
-    console.error('tg.sendData failed:', e);
-    alert('发送失败，请稍后重试');
-    return false;
-  }
-}
-
-// ---- 菜单接口（后端接好后使用）----
-// 后端返回建议字段：id, category_zh, category_en, name_zh, name_en, price, desc_zh, desc_en, icon, status
-async function loadMenuFromBackend() {
-    if (!APP_CONFIG.USE_BACKEND || !APP_CONFIG.API_BASE) return;
-
-    try {
-        const res = await fetch(`${APP_CONFIG.API_BASE}/menu`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-
-        if (!Array.isArray(data)) throw new Error('Menu API must return array');
-
-        // 替换 const 数组内容（不能直接 menuData = data，因为 menuData 是 const）
-        menuData.length = 0;
-        data.forEach(row => {
-            menuData.push({
-                id: row.id,
-                category: row.category_zh || row.category || '未分类', // 内部逻辑仍用中文键更稳
-                category_zh: row.category_zh || row.category || '未分类',
-                category_en: row.category_en || row.category_zh || row.category || 'Uncategorized',
-                name: row.name_zh || row.name || '',
-                name_zh: row.name_zh || row.name || '',
-                name_en: row.name_en || row.name_zh || row.name || '',
-                price: Number(row.price || 0),
-                desc: row.desc_zh || row.desc || '',
-                desc_zh: row.desc_zh || row.desc || '',
-                desc_en: row.desc_en || row.desc_zh || row.desc || '',
-                icon: row.icon || '🥤'
-            });
-        });
-
-        syncMenuDisplayByLang();
-
-        if (typeof renderOrderPage === 'function') renderOrderPage();
-        console.log('Menu loaded from backend:', menuData.length);
-    } catch (err) {
-        console.error('loadMenuFromBackend failed:', err);
     }
-}
-// ===== 我的页：地址/客服/设置 =====
-const ADDRESS_KEY = 'tiktalk_address_v1';
 
-function openCommonModal({ title, subtitle = '', bodyHTML = '', actionsHTML = '' }) {
-  const modal = document.getElementById('common-modal');
-  if (!modal) return;
+    function buildOrderPayload() {
+      return {
+        orderNo: `TT${Date.now()}`,
+        customer: {
+          name: document.getElementById('customerName').value.trim(),
+          phone: document.getElementById('customerPhone').value.trim(),
+          address: document.getElementById('customerAddress').value.trim(),
+          note: document.getElementById('customerNote').value.trim()
+        },
+        items: APP.state.cart.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          qty: item.qty,
+          sugar: item.sugar,
+          ice: item.ice,
+          toppings: item.toppings,
+          unitPrice: getItemUnitPrice(item),
+          subtotal: getItemUnitPrice(item) * item.qty
+        })),
+        totalAmount: getCartTotal(),
+        createdAt: new Date().toISOString()
+      };
+    }
 
-  document.getElementById('common-modal-title').innerText = title || '';
-  document.getElementById('common-modal-subtitle').innerText = subtitle || '';
-  document.getElementById('common-modal-body').innerHTML = bodyHTML || '';
-  document.getElementById('common-modal-actions').innerHTML = actionsHTML || '';
-
-  modal.classList.remove('hidden');
-}
-function closeCommonModal() {
-  const modal = document.getElementById('common-modal');
-  if (modal) modal.classList.add('hidden');
-}
-
-
-APP.STORE.loadAddress = function () {
-  try { return JSON.parse(localStorage.getItem(APP.KEYS.ADDRESS) || 'null'); }
-  catch (e) { return null; }
-};
-
-APP.STORE.saveAddress = function (payload) {
-  try { localStorage.setItem(APP.KEYS.ADDRESS, JSON.stringify(payload)); } catch (e) {}
-};
-
-APP.STORE.clearAddress = function () {
-  try { localStorage.removeItem(APP.KEYS.ADDRESS); } catch (e) {}
-};
-
-function openSupport() {
-  // 你可以改成你的实际客服信息
-  const phone = '0917XXXXXXX';
-  const telegramUsername = 'tiktalk_support'; // 例如：你的客服 TG 用户名（不带@也可以）
-  const fbPage = 'https://www.facebook.com/yourpage'; // 可选
-
-  openCommonModal({
-    title: '联系客服',
-    subtitle: '选择一种方式联系',
-    bodyHTML: `
-      <div class="space-y-2 text-sm">
-        <div class="p-3 bg-gray-50 rounded-xl flex justify-between items-center">
-          <div>
-            <div class="font-bold">电话</div>
-            <div class="text-xs text-gray-500">${phone}</div>
-          </div>
-          <button class="px-3 py-2 border rounded-xl" onclick="window.location.href='tel:${phone}'">拨打</button>
-        </div>
-
-        <div class="p-3 bg-gray-50 rounded-xl flex justify-between items-center">
-          <div>
-            <div class="font-bold">Telegram</div>
-            <div class="text-xs text-gray-500">@${telegramUsername}</div>
-          </div>
-          <button class="px-3 py-2 border rounded-xl" onclick="openTelegramChat('${telegramUsername}')">打开</button>
-        </div>
-
-        ${fbPage ? `
-        <div class="p-3 bg-gray-50 rounded-xl flex justify-between items-center">
-          <div>
-            <div class="font-bold">Facebook Page</div>
-            <div class="text-xs text-gray-500">消息联系</div>
-          </div>
-          <button class="px-3 py-2 border rounded-xl" onclick="window.open('${fbPage}', '_blank')">打开</button>
-        </div>` : ''}
-      </div>
-    `,
-    actionsHTML: `<button onclick="closeCommonModal()" class="w-full bg-gray-900 text-white rounded-xl py-3 font-bold">关闭</button>`
-  });
-}
-
-function openTelegramChat(username) {
-  // Telegram Mini App 环境：优先用 tg.openTelegramLink
-  if (typeof tg !== 'undefined' && tg && typeof tg.openTelegramLink === 'function') {
-    tg.openTelegramLink(`https://t.me/${username}`);
-    return;
-  }
-  window.open(`https://t.me/${username}`, '_blank');
-}
-
-function openSettings() {
-  openCommonModal({
-    title: '个人设置',
-    subtitle: 'MVP：语言 + 清空本地缓存',
-    bodyHTML: `
-      <div class="space-y-3">
-        <div class="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
-          <div>
-            <div class="font-bold text-sm">语言</div>
-            <div class="text-xs text-gray-500">当前：${(typeof appLang !== 'undefined' && appLang==='en') ? 'English' : '中文'}</div>
-          </div>
-          <div class="flex gap-2">
-            <button class="px-3 py-2 border rounded-xl" onclick="switchLang('zh')">中文</button>
-            <button class="px-3 py-2 border rounded-xl" onclick="switchLang('en')">EN</button>
-          </div>
-        </div>
-
-        <div class="p-3 bg-gray-50 rounded-xl">
-          <div class="font-bold text-sm mb-2">缓存管理</div>
-          <button class="w-full border rounded-xl py-3 font-bold" onclick="clearLocalCache()">清空本地缓存（购物车/地址/语言）</button>
-          <div class="text-xs text-gray-500 mt-2">用于排查异常；清空后会回到初始状态。</div>
-        </div>
-      </div>
-    `,
-    actionsHTML: `<button onclick="closeCommonModal()" class="w-full bg-gray-900 text-white rounded-xl py-3 font-bold">关闭</button>`
-  });
-}
-
-function clearLocalCache() {
-  try {
-    localStorage.removeItem('tiktalk_cart_v1');
-    localStorage.removeItem('tiktalk_address_v1');
-    localStorage.removeItem('appLang');
-  } catch {}
-  notify('已清空缓存，请刷新页面');
-}
-
-// 把“我的”页三个卡片按钮绑定到功能
-function bindMePageActions() {
-  const addressCard = document.getElementById('me-address');
-  const supportCard = document.getElementById('me-support');
-  const settingsCard = document.getElementById('me-settings');
-
-  if (addressCard) {
-    addressCard.onclick = () => {
-      openAddressModal();
-    };
-  }
-
-  if (supportCard) {
-    supportCard.onclick = () => {
-      openSupport();
-    };
-  }
-
-  if (settingsCard) {
-    settingsCard.onclick = () => {
-      openSettings();
-    };
-  }
-
-  if (APP.UI && typeof APP.UI.refreshMeSummary === 'function') {
-    APP.UI.refreshMeSummary();
-  }
-}
-// ====== Me page modals + address storage ======
-
-
-
-let addressModalState = {
-  fromCheckout: false
-};
-
-function openAddressModal(options = {}) {
-  addressModalState.fromCheckout = !!options.fromCheckout;
-
-  const old = APP.STORE.loadAddress() || {
-    name: '',
-    phone: '',
-    addr: '',
-    note: ''
-  };
-
-  const html = `
-    <div id="address-modal" class="fixed inset-0 bg-black/50 z-[150] flex items-end">
-      <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up max-h-[85vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <div class="font-black text-lg text-gray-900">收货地址</div>
-          <button type="button" onclick="closeAddressModal()" class="text-gray-400 text-2xl">✕</button>
-        </div>
-
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-bold mb-2">收货人</label>
-            <input id="addr-name" class="w-full border rounded-xl px-4 py-3" value="${old.name || ''}" placeholder="请输入收货人姓名">
-          </div>
-
-          <div>
-            <label class="block text-sm font-bold mb-2">联系电话</label>
-            <input id="addr-phone" class="w-full border rounded-xl px-4 py-3" value="${old.phone || ''}" placeholder="请输入联系电话">
-          </div>
-
-          <div>
-            <label class="block text-sm font-bold mb-2">收货地址</label>
-            <textarea id="addr-detail" class="w-full border rounded-xl px-4 py-3 min-h-[100px]" placeholder="请输入详细地址">${old.addr || ''}</textarea>
-          </div>
-
-          <div>
-            <label class="block text-sm font-bold mb-2">备注</label>
-            <textarea id="addr-note" class="w-full border rounded-xl px-4 py-3 min-h-[80px]" placeholder="备注（选填）">${old.note || ''}</textarea>
-          </div>
-        </div>
-
-        <div class="flex gap-3 mt-6">
-          <button type="button" onclick="closeAddressModal()" class="flex-1 border rounded-xl py-3 font-bold">
-            取消
-          </button>
-          <button type="button" onclick="saveAddressFromModal()" class="flex-1 bg-gray-900 text-white rounded-xl py-3 font-bold">
-            保存
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const oldModal = document.getElementById('address-modal');
-  if (oldModal) oldModal.remove();
-
-  document.body.insertAdjacentHTML('beforeend', html);
-  document.body.style.overflow = 'hidden';
-}
-
-function closeAddressModal() {
-  const modal = document.getElementById('address-modal');
-  if (modal) modal.remove();
-  document.body.style.overflow = '';
-}
-
-function saveAddressFromModal() {
-  const name = document.getElementById('addr-name')?.value.trim() || '';
-  const phone = document.getElementById('addr-phone')?.value.trim() || '';
-  const addr = document.getElementById('addr-detail')?.value.trim() || '';
-  const note = document.getElementById('addr-note')?.value.trim() || '';
-
-  if (!name) {
-    alert('请填写收货人姓名');
-    return;
-  }
-  if (!phone) {
-    alert('请填写联系电话');
-    return;
-  }
-  if (!addr) {
-    alert('请填写收货地址');
-    return;
-  }
-
-  APP.STORE.saveAddress({ name, phone, addr, note });
-
-  if (APP.UI && typeof APP.UI.refreshMeSummary === 'function') {
-    APP.UI.refreshMeSummary();
-  }
-
-  closeAddressModal();
-
-  // 如果是从结算流程来的，保存后直接重新打开确认订单弹窗
-  if (addressModalState.fromCheckout) {
-    addressModalState.fromCheckout = false;
-    checkoutFlowState.editingAddressFromCheckout = false;
-
-    setTimeout(() => {
+    function submitOrder() {
       const payload = buildOrderPayload();
-      openCheckoutConfirmModal(payload);
-    }, 100);
+      if (!payload.customer.name) return alert('请填写联系人姓名');
+      if (!payload.customer.phone) return alert('请填写联系电话');
+      if (!payload.customer.address) return alert('请填写收货地址');
 
-    return;
-  }
+      console.log('DAY1_ORDER_PAYLOAD', payload);
+      alert(`Day 1 假提交成功\n订单号：${payload.orderNo}\n已输出到 console.log`);
 
-  // 普通从“我的”页进入时，不切页，不做额外跳转
-}
+      APP.state.cart = [];
+      renderCartBadge();
+      closeCheckout();
+    }
 
-window.openAddressModal = openAddressModal;
-window.closeAddressModal = closeAddressModal;
-window.saveAddressFromModal = saveAddressFromModal;
+    document.getElementById('qtyMinus').addEventListener('click', () => {
+      APP.state.currentQty = Math.max(1, APP.state.currentQty - 1);
+      document.getElementById('qtyValue').textContent = APP.state.currentQty;
+    });
 
-// 把下面这个链接换成你真实客服链接（或用 tg.openTelegramLink）
-function openSupportTelegram() {
-  const url = 'https://t.me/YOUR_SUPPORT_USERNAME'; // 改这里
-  if (tg && typeof tg.openTelegramLink === 'function') {
-    tg.openTelegramLink(url);
-  } else {
-    window.open(url, '_blank');
-  }
-}
+    document.getElementById('qtyPlus').addEventListener('click', () => {
+      APP.state.currentQty += 1;
+      document.getElementById('qtyValue').textContent = APP.state.currentQty;
+    });
 
-function openSettingsModal() {
-  const m = document.getElementById('settings-modal');
-  if (!m) return;
-  m.classList.remove('hidden');
-  m.classList.add('flex');
-}
-function closeSettingsModal() {
-  const m = document.getElementById('settings-modal');
-  if (!m) return;
-  m.classList.add('hidden');
-  m.classList.remove('flex');
-}
+    document.getElementById('addToCartBtn').addEventListener('click', addCurrentToCart);
+    document.getElementById('cartBtn').addEventListener('click', openCart);
+    document.getElementById('goCheckoutBtn').addEventListener('click', openCheckout);
+    document.getElementById('submitOrderBtn').addEventListener('click', submitOrder);
 
-function clearCartAndRefresh() {
-  cart = [];
-  persistCart();
-  updateCartUI();
-  if (typeof renderCartPage === 'function') renderCartPage();
-  if (typeof renderOrderPage === 'function') renderOrderPage();
-  notify('购物车已清空');
-}
-// ---- 初始化 ----
-(function initAppPatch() {
-    ensureMenuBilingualFields();
-
-    const savedLang = localStorage.getItem('appLang');
-    if (savedLang === 'zh' || savedLang === 'en') appLang = savedLang;
-
-    syncMenuDisplayByLang();
-    updateLangButtonsUI();
-    applyLanguageToStaticUI();
-
-    // 先渲染本地菜单（确保本地可运行）
-    if (typeof renderOrderPage === 'function') renderOrderPage();
-
-    // 再尝试拉后端（后端接好后开启 USE_BACKEND）
-    loadMenuFromBackend();
-
-    // 默认显示首页（保留你的原逻辑）
-    switchTab('home');
-    updateCartUI();
-    renderPickupPage();
-    bindMePageActions();
-    setTimeout(() => {
-        if (document.getElementById('btn-奶盖系列')) scrollToCat('奶盖系列');
-    }, 100);
-})();
-// 放在初始化末尾调用一次
-bindMePageActions();     
-// window.orderMinus = orderMinus;
-window.cartLineInc = cartLineInc;
-window.cartLineDec = cartLineDec;
-window.openCheckoutConfirmModal = openCheckoutConfirmModal;
-window.closeCheckoutConfirmModal = closeCheckoutConfirmModal;
-window.confirmSubmitOrder = confirmSubmitOrder;
-window.reallySubmitOrder = reallySubmitOrder;        
-</script>
-<div id="order-detail-modal" class="fixed inset-0 bg-black/50 z-[130] hidden items-end">
-  <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up max-h-[85vh] overflow-y-auto">
-    <div class="flex justify-between items-center mb-4">
-      <div class="font-bold text-lg">订单详情</div>
-      <button type="button" onclick="closeOrderDetailModal()" class="text-gray-400 text-2xl">✕</button>
-    </div>
-
-    <div id="order-detail-body"></div>
-
-    <div class="mt-5">
-      <button type="button" onclick="closeOrderDetailModal()" class="w-full border rounded-xl py-3 font-bold">关闭</button>
-    </div>
-  </div>
-</div> 
-                    <div id="checkout-confirm-modal" class="fixed inset-0 bg-black/50 z-[140] hidden items-end">
-  <div class="bg-white w-full rounded-t-3xl p-6 animate-slide-up max-h-[85vh] overflow-y-auto">
-    <div class="flex justify-between items-center mb-4">
-      <div class="font-bold text-lg">确认订单信息</div>
-      <button type="button" onclick="closeCheckoutConfirmModal()" class="text-gray-400 text-2xl">✕</button>
-    </div>
-
-    <div id="checkout-confirm-body"></div>
-
-    <div class="mt-5 flex gap-3">
-      <button type="button" onclick="closeCheckoutConfirmModal()" class="flex-1 border rounded-xl py-3 font-bold">返回修改</button>
-      <button type="button" onclick="confirmSubmitOrder()" class="flex-1 bg-yellow-400 rounded-xl py-3 font-bold">确认下单</button>
-    </div>
-  </div>
-</div>
+    initTelegram();
+    renderCategories();
+    renderProducts();
+    renderCartBadge();
+  </script>
 </body>
 </html>
-
-
-
